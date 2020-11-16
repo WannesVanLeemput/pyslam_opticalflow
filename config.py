@@ -47,6 +47,7 @@ class Config(object):
         self.cam_settings = None
         self.dataset_settings = None
         self.dataset_type = None
+        self.direct = None
         #self.current_path = os.getcwd()
         #print('current path: ', self.current_path)
 
@@ -56,6 +57,10 @@ class Config(object):
         
         self.get_dataset_settings()
         self.get_cam_settings()
+
+    # set direct approach from config.ini
+    def set_direct_approach(self):
+        self.direct = self.config_parser['DIRECT_APPROACH']['direct']
 
     # read core lib paths from config.ini and set sys paths
     def set_core_lib_paths(self):

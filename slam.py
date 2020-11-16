@@ -243,7 +243,7 @@ class Tracking(object):
             Rcw = estimated_Tcw[:3,:3] # copy only the rotation 
             tcw = f_ref.pose[:3,3]     # override translation with ref frame translation          
             f_cur.update_rotation_and_translation(Rcw, tcw)     
-        return  idxs_ref, idxs_cur
+        return idxs_ref, idxs_cur
 
 
     def pose_optimization(self, f_cur, name=''):

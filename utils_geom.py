@@ -173,7 +173,7 @@ def triangulate_normalized_points(pose_1w, pose_2w, kpn_1, kpn_2):
 
     point_4d_hom = cv2.triangulatePoints(P1w, P2w, kpn_1.T, kpn_2.T)
     good_pts_mask = np.where(point_4d_hom[3]!= 0)[0]
-    point_4d = point_4d_hom / point_4d_hom[3] 
+    point_4d = point_4d_hom / point_4d_hom[3]
     
     if __debug__:
         if False: 
