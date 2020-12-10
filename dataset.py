@@ -26,7 +26,7 @@ import glob
 import time 
 
 from multiprocessing import Process, Queue, Value 
-from utils import Printer 
+from utils import Printer
 
 
 class DatasetType(Enum):
@@ -67,10 +67,14 @@ def dataset_factory(settings):
         fps = 10 # a default value 
         if 'fps' in settings:
             fps = int(settings['fps'])
-        dataset = FolderDataset(path, name, fps, associations, DatasetType.FOLDER)      
+        if 'flow_files' in settings:
+            flow = settings['flow_files']
+            dataset = FlowDataset(flow, path, name, fps, associations, DatasetType.FLOW_DATASET)
+        else:
+            dataset = FolderDataset(path, name, fps, associations, DatasetType.FOLDER)
     if type == 'live':
-        dataset = LiveDataset(path, name, associations, DatasetType.LIVE)   
-                
+        dataset = LiveDataset(path, name, associations, DatasetType.LIVE)
+
     return dataset 
 
 
@@ -214,6 +218,30 @@ class FolderDataset(Dataset):
         # Increment internal counter.
         self.i = self.i + 1
         return img
+
+
+class FlowDataset(FolderDataset):
+    def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.VIDEO):
+        super().__init__(path, name, fps, associations, type)
+        self.flow = flow
+        print('Preprocessing Flow Directory Input')
+        self.listing_flow = glob.glob(flow + '/*flo')
+        self.listing_flow.sort()
+        self.listing_flow = self.listing_flow[::self.skip]
+        if len(self.listing_flow != self.maxlen):
+            raise IOError('Flow files do not match images')
+
+    def getFlow(self):
+        """
+        all_flow2d = []
+        for i in range(self.maxlen):
+            flow_file = self.listing_flow[self.i]
+            flow2d = flowlib.read_flow(flow_file)
+            all_flow2d.append(flow2d)
+        return all_flow2d
+        """
+        return self.listing_flow
+
 
 class FolderDatasetParallelStatus:
     def __init__(self, i, maxlen, listing, skip):

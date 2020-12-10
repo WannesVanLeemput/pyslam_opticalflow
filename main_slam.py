@@ -72,6 +72,8 @@ if __name__ == "__main__":
     tracker_config = FeatureTrackerConfigs.TEST
     tracker_config['num_features'] = num_features
     tracker_config['tracker_type'] = tracker_type
+    if tracker_config == FeatureTrackerConfigs.DIRECT:
+        tracker_config['flow_files'] = dataset.getFlow
     
     print('tracker_config: ',tracker_config)    
     feature_tracker = feature_tracker_factory(**tracker_config)

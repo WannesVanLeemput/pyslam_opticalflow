@@ -24,7 +24,8 @@ import numpy as np
 from threading import RLock, Thread
 from scipy.spatial import cKDTree
 
-from parameters import Parameters  
+from feature_tracker import FeatureTrackerTypes
+from parameters import Parameters
 
 from camera_pose import CameraPose
 
@@ -274,8 +275,11 @@ class Frame(FrameBase):
                 self.img = img.copy()  
             else: 
                 self.img = None                    
-            if kps_data is None:   
-                self.kps, self.des = Frame.tracker.detectAndCompute(img)                                                         
+            if kps_data is None:
+                if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+                    self.kps, self.des = Frame.tracker.detectAndCompute(img, self.id)
+                else:
+                    self.kps, self.des = Frame.tracker.detectAndCompute(img)
                 # convert from a list of keypoints to arrays of points, octaves, sizes  
                 kps_data = np.array([ [x.pt[0], x.pt[1], x.octave, x.size, x.angle] for x in self.kps ], dtype=np.float32)                            
                 self.kps     = kps_data[:,:2]    
@@ -521,8 +525,11 @@ class Frame(FrameBase):
 
 # match frames f1 and f2
 # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
-def match_frames(f1, f2, ratio_test=None):     
-    idx1, idx2 = Frame.feature_matcher.match(f1.des, f2.des, ratio_test)
+def match_frames(f1, f2, ratio_test=None):
+    if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+        idx1, idx2 = Frame.feature_matcher.match(f1, f2, ratio_test)
+    else:
+        idx1, idx2 = Frame.feature_matcher.match(f1.des, f2.des, ratio_test)
     idx1 = np.asarray(idx1)
     idx2 = np.asarray(idx2)   
     return idx1, idx2         

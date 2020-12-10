@@ -18,6 +18,8 @@
 """
 import numpy as np 
 import cv2
+
+from frame import Frame
 from parameters import Parameters  
 from enum import Enum
 from collections import defaultdict
@@ -30,6 +32,7 @@ class FeatureMatcherTypes(Enum):
     NONE = 0
     BF = 1     
     FLANN = 2
+    FLOW = 3
 
 
 def feature_matcher_factory(norm_type=cv2.NORM_HAMMING, cross_check=False, ratio_test=kRatioTest, type=FeatureMatcherTypes.FLANN):
@@ -37,6 +40,8 @@ def feature_matcher_factory(norm_type=cv2.NORM_HAMMING, cross_check=False, ratio
         return BfFeatureMatcher(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
     if type == FeatureMatcherTypes.FLANN:
         return FlannFeatureMatcher(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
+    if type == FeatureMatcherTypes.FLOW:
+        return FlowFeatureMatcher(type=type)
     return None 
 
 
@@ -216,5 +221,17 @@ class FlannFeatureMatcher(FeatureMatcher):
             self.index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 4)  
         self.search_params = dict(checks=32)   # or pass empty dictionary                 
         self.matcher = cv2.FlannBasedMatcher(self.index_params, self.search_params)  
-        self.matcher_name = 'FlannFeatureMatcher'                                                
+        self.matcher_name = 'FlannFeatureMatcher'
 
+
+class FlowFeatureMatcher(FeatureMatcher):
+    def __init__(self, norm_type=cv2.NORM_HAMMING, cross_check = False, ratio_test=kRatioTest, type = FeatureMatcherTypes.FLOW):
+        super().__init__(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
+        self.matcher_name = 'FlowFeatureMatcher'
+
+    class Matcher(object):
+        # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
+        def match(self, f_cur, f_ref):
+            assert type(f_cur) == Frame.__class__   # for debugging purposes
+            # TODO: implement this to be a matcher like cv2 matchers (output compatible)
+            
