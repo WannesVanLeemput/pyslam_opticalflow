@@ -14,6 +14,7 @@ matches.txt
 map.png
 .vscode 
 videos/webcam
+.idea
 
 kf_info.log 
 local_mapping.log 
