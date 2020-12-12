@@ -628,8 +628,16 @@ class Tracking(object):
                 Printer.red('tracking failure')
                 
             # update motion model state     
-            self.motion_model.is_ok = self.pose_is_ok                    
-                                
+            self.motion_model.is_ok = self.pose_is_ok
+            x = self.f_cur.quaternion.x()
+            y = self.f_cur.quaternion.y()
+            z = self.f_cur.quaternion.z()
+            w = self.f_cur.quaternion.w()
+            translation = self.f_cur.position
+            file = open("poses.txt", 'a')
+            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            file.close()
+            print(self.tracking_history)
             if self.pose_is_ok:   # if tracking was successful
                 
                 # update motion model                     
