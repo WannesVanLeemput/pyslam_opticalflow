@@ -19,7 +19,6 @@
 import numpy as np 
 import cv2
 
-from frame import Frame
 from parameters import Parameters  
 from enum import Enum
 from collections import defaultdict
@@ -229,9 +228,10 @@ class FlowFeatureMatcher(FeatureMatcher):
         super().__init__(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
         self.matcher_name = 'FlowFeatureMatcher'
 
-    class Matcher(object):
+   # class Matcher(object):
         # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
-        def match(self, f_cur, f_ref):
-            assert type(f_cur) == Frame.__class__   # for debugging purposes
-            # TODO: implement this to be a matcher like cv2 matchers (output compatible)
-            
+        # def match(self, f_cur, f_ref):
+            #assert type(f_cur) == Frame.__class__ # for debugging purposes
+            #motion_vectors = f_ref.
+            # TODO: implement this to be a matcher like cv2 matchers (output compatible), only used for VO! Not a priority
+

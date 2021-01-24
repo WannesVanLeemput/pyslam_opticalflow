@@ -93,12 +93,12 @@ def read_flow(filename):
     if 202021.25 != magic:
         print('Magic number incorrect. Invalid .flo file')
     else:
-        w = np.fromfile(f, np.int32, count=1)
-        h = np.fromfile(f, np.int32, count=1)
+        w = np.fromfile(f, np.int32, count=1)[0]
+        h = np.fromfile(f, np.int32, count=1)[0]
         print("Reading %d x %d flo file" % (h, w))
         data2d = np.fromfile(f, np.float32, count=2 * w * h)
         # reshape data into 3D array (columns, rows, channels)
-        data2d = np.resize(data2d, (h[0], w[0], 2))
+        data2d = np.resize(data2d, (h, w, 2))
     f.close()
     return data2d
 

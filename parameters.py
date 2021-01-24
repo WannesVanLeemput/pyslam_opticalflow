@@ -25,7 +25,7 @@ class Parameters(object):
     
     # SLAM threads 
     kLocalMappingOnSeparateThread=True           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread 
-    kTrackingWaitForLocalMappingToGetIdle=False  
+    kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=0.5 # 0.5  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
     kLocalMappingParallelKpsMatchingNumWorkers=4

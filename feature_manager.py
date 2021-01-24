@@ -449,7 +449,16 @@ class FeatureManager(object):
             self.scale_factor = self._feature_detector.scale_factor
             self.keypoint_filter_type = KeyPointFilterTypes.NONE
             #    
-            #                                                                                                                                                
+            #
+
+        elif self.detector_type == FeatureDetectorTypes.MOTIONVECTORS:
+            self._feature_detector = None # only needed for VO (I think) TODO: is this true?
+            self.num_features = 1080 * 720 # prob won't go higher in resolution TODO: fix this with image size
+            self.num_levels = 1
+            self.scale_factor = 1
+            self.keypoint_filter_type = None
+            self.oriented_features = False
+            self.need_color_image = False
         else:
             raise ValueError("Unknown feature detector %s" % self.detector_type)
                 

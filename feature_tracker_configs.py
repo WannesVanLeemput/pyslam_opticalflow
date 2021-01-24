@@ -30,7 +30,7 @@ kNumFeatures = Parameters.kNumFeatures
 
 kRatioTest = Parameters.kFeatureMatchRatioTest
 
-kTrackerType = FeatureTrackerTypes.DES_BF  # default descriptor-based, brute force matching with knn
+kTrackerType = FeatureTrackerTypes.DIRECT  # default descriptor-based, brute force matching with knn
 # kTrackerType = FeatureTrackerTypes.DES_FLANN  # default descriptor-based, FLANN-based matching
 
 
@@ -194,9 +194,9 @@ class FeatureTrackerConfigs(object):
                        tracker_type=kTrackerType)
 
     DIRECT = dict(num_features=kNumFeatures,
-                  num_levels=0,
-                  scale_factor=0,
-                  detector_type=FeatureDetectorTypes.NONE,
-                  descriptor_type=FeatureDescriptorTypes.NONE,
+                  num_levels=1,
+                  scale_factor=1,
+                  detector_type=FeatureDetectorTypes.MOTIONVECTORS,
+                  descriptor_type=FeatureDescriptorTypes.MOTIONVECTORS,
                   match_ratio_test=kRatioTest,
                   tracker_type=kTrackerType)

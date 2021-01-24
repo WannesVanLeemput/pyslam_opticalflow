@@ -88,7 +88,7 @@ def propagate_map_point_matches(f_ref, f_cur, idxs_ref, idxs_cur,
 def search_frame_by_projection(f_ref, f_cur,
                                max_reproj_distance=Parameters.kMaxReprojectionDistanceFrame,
                                max_descriptor_distance=Parameters.kMaxDescriptorDistance,
-                               ratio_test=Parameters.kMatchRatioTestMap):
+                               ratio_test=Parameters.kMatchRatioTestMap, opticalFlow = False):
     found_pts_count = 0
     idxs_ref = []
     idxs_cur = [] 
@@ -114,8 +114,16 @@ def search_frame_by_projection(f_ref, f_cur,
     kp_ref_octaves = f_ref.octaves[matched_ref_idxs]       
     kp_ref_scale_factors = Frame.feature_manager.scale_factors[kp_ref_octaves]              
     radiuses = max_reproj_distance * kp_ref_scale_factors     
-    kd_idxs = f_cur.kd.query_ball_point(projs, radiuses)        
-                                  
+    kd_idxs = f_cur.kd.query_ball_point(projs, radiuses)
+    # projection becomes easy: get the pixel in f_cur from motion vector (descriptor of kpt)
+    if opticalFlow:
+        for kpt_ref, kpt_des in zip(f_ref.kps, f_ref.des):
+            coord_ref = kpt_ref.pt
+            x_cur = coord_ref.x + kpt_des[0]
+            y_cur = coord_ref.y + kpt_des[1]
+            print(x_cur, y_cur)
+
+
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
     
         if not is_visible[j]:

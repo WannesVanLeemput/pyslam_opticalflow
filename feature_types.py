@@ -57,7 +57,8 @@ class FeatureDetectorTypes(Enum):
     CONTEXTDESC = 20  # [end-to-end] only with CONTEXTDESC descriptor - "ContextDesc: Local Descriptor Augmentation with Cross-Modality Context"  
     LFNET       = 21  # [end-to-end] joint detector-descriptor - "LF-Net: Learning Local Features from Images"
     R2D2        = 22  # [end-to-end] joint detector-descriptor - "R2D2: Repeatable and Reliable Detector and Descriptor"   
-    KEYNET      = 23  # "Key.Net: Keypoint Detection by Handcrafted and Learned CNN Filters"       
+    KEYNET      = 23  # "Key.Net: Keypoint Detection by Handcrafted and Learned CNN Filters"
+    MOTIONVECTORS = 24 # Features are motion vectors gathered with optical flow
 
 
 class FeatureDescriptorTypes(Enum):
@@ -88,7 +89,8 @@ class FeatureDescriptorTypes(Enum):
     CONTEXTDESC = 24  # [end-to-end] only with CONTEXTDESC detector - "ContextDesc: Local Descriptor Augmentation with Cross-Modality Context"      
     LFNET       = 25  # [end-to-end] joint detector-descriptor (only with LFNET detector) - "LF-Net: Learning Local Features from Images"
     R2D2        = 26  # [end-to-end] joint detector-descriptor (only with R2D2 detector) - "R2D2: Repeatable and Reliable Detector and Descriptor" 
-    KEYNET      = 27  # keynet descriptor is HARDNET (only with KEYNET detector) - "Key.Net: Keypoint Detection by Handcrafted and Learned CNN Filters"                  
+    KEYNET      = 27  # keynet descriptor is HARDNET (only with KEYNET detector) - "Key.Net: Keypoint Detection by Handcrafted and Learned CNN Filters"
+    MOTIONVECTORS = 28  # Features are motion vectors gathered with optical flow
     
     
 class FeatureInfo(object): 
@@ -180,4 +182,7 @@ class FeatureInfo(object):
     max_descriptor_distance[FeatureDescriptorTypes.R2D2] = 1.4          # R2D2       
     #
     norm_type[FeatureDescriptorTypes.KEYNET] = cv2.NORM_L2   
-    max_descriptor_distance[FeatureDescriptorTypes.KEYNET] = 1.6        # KEYNET      
+    max_descriptor_distance[FeatureDescriptorTypes.KEYNET] = 1.6        # KEYNET
+    #
+    norm_type[FeatureDescriptorTypes.MOTIONVECTORS] = cv2.NORM_L2
+    max_descriptor_distance[FeatureDescriptorTypes.MOTIONVECTORS] = float('inf')         # Motion vectors

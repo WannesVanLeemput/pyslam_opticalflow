@@ -29,7 +29,7 @@ class Display2D(object):
     def __init__(self, W, H, is_BGR=True):
         pygame.init()
         pygame.display.set_caption('Camera')
-        self.screen = pygame.display.set_mode((W, H), DOUBLEBUF)
+        self.screen = pygame.display.set_mode((W, H), pygame.RESIZABLE)
         self.surface = pygame.Surface(self.screen.get_size()).convert()
         self.is_BGR = is_BGR
 

@@ -36,6 +36,7 @@ class DatasetType(Enum):
     VIDEO = 4
     FOLDER = 5  # generic folder of pics 
     LIVE = 6
+    FLOW_DATASET = 7
 
 
 def dataset_factory(settings):
@@ -221,14 +222,14 @@ class FolderDataset(Dataset):
 
 
 class FlowDataset(FolderDataset):
-    def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.VIDEO):
+    def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.FOLDER):
         super().__init__(path, name, fps, associations, type)
         self.flow = flow
         print('Preprocessing Flow Directory Input')
         self.listing_flow = glob.glob(flow + '/*flo')
         self.listing_flow.sort()
         self.listing_flow = self.listing_flow[::self.skip]
-        if len(self.listing_flow != self.maxlen):
+        if len(self.listing_flow) != self.maxlen - 2: # - 1 since last image does not have flow file. Why -2?
             raise IOError('Flow files do not match images')
 
     def getFlow(self):

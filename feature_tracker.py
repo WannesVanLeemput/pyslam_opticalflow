@@ -50,7 +50,8 @@ def feature_tracker_factory(num_features=kMinNumFeatureDefault,
                             detector_type=FeatureDetectorTypes.FAST,
                             descriptor_type=FeatureDescriptorTypes.ORB,
                             match_ratio_test=kRatioTest,
-                            tracker_type=FeatureTrackerTypes.LK):
+                            tracker_type=FeatureTrackerTypes.LK,
+                            flow_files=None):
     if tracker_type == FeatureTrackerTypes.LK:
         return LkFeatureTracker(num_features=num_features,
                                 num_levels=num_levels,
@@ -60,7 +61,14 @@ def feature_tracker_factory(num_features=kMinNumFeatureDefault,
                                 match_ratio_test=match_ratio_test,
                                 tracker_type=tracker_type)
     elif tracker_type == FeatureTrackerTypes.DIRECT:
-        return 0  # TODO: return direct tracking class
+        return DirectTracker(num_features=num_features,
+                             num_levels=num_levels,
+                             scale_factor=scale_factor,
+                             detector_type=detector_type,
+                             descriptor_type=descriptor_type,
+                             match_ratio_test=match_ratio_test,
+                             tracker_type=tracker_type,
+                             flow_files=flow_files)
     else:
         return DescriptorFeatureTracker(num_features=num_features,
                                         num_levels=num_levels,
@@ -134,12 +142,13 @@ class FeatureTracker(object):
     def track(self, image_ref, image_cur, kps_ref, des_ref):
         return FeatureTrackingResult()
 
+
 class DirectTracker(FeatureTracker):
     def __init__(self, num_features=kMinNumFeatureDefault,
-                 num_levels=0,  # number of pyramid levels for detector
-                 scale_factor=0,  # detection scale factor (if it can be set, otherwise it is automatically computed)
-                 detector_type=FeatureDetectorTypes.NONE,
-                 descriptor_type=FeatureDescriptorTypes.NONE,
+                 num_levels=1,  # number of pyramid levels for detector
+                 scale_factor=1,  # detection scale factor (if it can be set, otherwise it is automatically computed)
+                 detector_type=FeatureDetectorTypes.MOTIONVECTORS,
+                 descriptor_type=FeatureDescriptorTypes.MOTIONVECTORS,
                  match_ratio_test=kRatioTest,
                  tracker_type=FeatureTrackerTypes.DIRECT,
                  flow_files=None):

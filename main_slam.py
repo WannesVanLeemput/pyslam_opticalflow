@@ -64,16 +64,17 @@ if __name__ == "__main__":
     
     num_features=2000 
 
-    tracker_type = FeatureTrackerTypes.DES_BF      # descriptor-based, brute force matching with knn 
-    #tracker_type = FeatureTrackerTypes.DES_FLANN  # descriptor-based, FLANN-based matching 
+    # tracker_type = FeatureTrackerTypes.DES_BF      # descriptor-based, brute force matching with knn
+    # tracker_type = FeatureTrackerTypes.DES_FLANN  # descriptor-based, FLANN-based matching
+    tracker_type = FeatureTrackerTypes.DIRECT # direct method, optical flow based matching
 
     # select your tracker configuration (see the file feature_tracker_configs.py) 
     # FeatureTrackerConfigs: SHI_TOMASI_ORB, FAST_ORB, ORB, ORB2, ORB2_FREAK, BRISK, AKAZE, FAST_FREAK, SIFT, ROOT_SIFT, SURF, SUPERPOINT, FAST_TFEAT
-    tracker_config = FeatureTrackerConfigs.TEST
+    tracker_config = FeatureTrackerConfigs.DIRECT
     tracker_config['num_features'] = num_features
     tracker_config['tracker_type'] = tracker_type
     if tracker_config == FeatureTrackerConfigs.DIRECT:
-        tracker_config['flow_files'] = dataset.getFlow
+        tracker_config['flow_files'] = dataset.getFlow()
     
     print('tracker_config: ',tracker_config)    
     feature_tracker = feature_tracker_factory(**tracker_config)
@@ -108,7 +109,7 @@ if __name__ == "__main__":
 
             if img is not None:
                 time_start = time.time()                  
-                slam.track(img, img_id, timestamp)  # main SLAM function 
+                slam.track(img, img_id, timestamp)  # main SLAM function
                                 
                 # 3D display (map display)
                 if viewer3D is not None:
@@ -183,7 +184,7 @@ if __name__ == "__main__":
         
         if viewer3D is not None:
             is_paused = not viewer3D.is_paused()         
-                        
+    print(slam.tracking.tracking_history)
     slam.quit()
     
     #cv2.waitKey(0)
