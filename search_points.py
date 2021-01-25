@@ -31,6 +31,7 @@ from utils import Printer, getchar
 from parameters import Parameters  
 from timer import Timer
 from rotation_histogram import RotationHistogram
+from feature_tracker import FeatureTrackerTypes
 
 
 kMinDistanceFromEpipole = Parameters.kMinDistanceFromEpipole
@@ -351,9 +352,12 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
 
     if idxs1 is None or idxs2 is None:
         timerMatch = Timer()
-        timerMatch.start()        
-        idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)        
-        print('search_frame_for_triangulation - matching - timer: ', timerMatch.elapsed())        
+        timerMatch.start()
+        if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+            idxs1, idxs2 = Frame.feature_matcher.match(kf1, kf2)
+        else:
+            idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)
+        print('search_frame_for_triangulation - matching - timer: ', timerMatch.elapsed())
     
     rot_histo = RotationHistogram()
     check_orientation = kCheckFeaturesOrientation and Frame.oriented_features     

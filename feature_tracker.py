@@ -173,13 +173,21 @@ class DirectTracker(FeatureTracker):
     def detectAndCompute(self, frame, frame_id=0):
         kps = []
         des = []
-        for i in range(frame.shape[0]):
-            for j in range(frame.shape[1]):
-                kp = cv2.KeyPoint(x=i, y=j, size=1)
+        h = self.all_flow2d[0].shape[0]
+        w = self.all_flow2d[1].shape[1]
+        offset_h = 0
+        offset_w = 0
+        if h < frame.shape[0]:
+            offset_h = int((frame.shape[0] - h) / 2)
+        if w < frame.shape[1]:
+            offset_w = int(frame.shape[1] - w / 2)
+        for i in range(h):
+            for j in range(w):
+                kp = cv2.KeyPoint(x=i+offset_h, y=j+offset_w, _size=1)
                 d = self.all_flow2d[0][i, j]  # motion vector
                 kps.append(kp)
                 des.append(d)
-        return kps, des
+        return np.array(kps), np.array(des)
 
 
 # Lucas-Kanade Tracker: it uses raw pixel patches as "descriptors" and track/"match" by using Lucas Kanade pyr optic flow

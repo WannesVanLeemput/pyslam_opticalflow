@@ -228,10 +228,23 @@ class FlowFeatureMatcher(FeatureMatcher):
         super().__init__(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
         self.matcher_name = 'FlowFeatureMatcher'
 
-   # class Matcher(object):
-        # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
-        # def match(self, f_cur, f_ref):
-            #assert type(f_cur) == Frame.__class__ # for debugging purposes
-            #motion_vectors = f_ref.
-            # TODO: implement this to be a matcher like cv2 matchers (output compatible), only used for VO! Not a priority
+    # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
+    def match(self, f_cur, f_ref, ratio_test=None):
+        # assert type(f_cur) == Frame.__class__ # for debugging purposes
+        idx1 = []
+        idx2 = []
+        motion_vectors = f_ref.des
+        keypoints_ref = f_ref.kps
+        offset_x = keypoints_ref[0][0]
+        offset_y = keypoints_ref[0][1]
+        width = keypoints_ref[-1][1] + 1
+        for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
+            new_x = int(keypoint[0] + mv[0])
+            new_y = int(keypoint[1] + mv[1])
+            match_idx = int((new_x-offset_x)*width + new_y)
+            if match_idx < len(f_cur.des):
+                idx1.append(match_idx)
+                idx2.append(idx_ref)
+        return idx1, idx2
+
 
