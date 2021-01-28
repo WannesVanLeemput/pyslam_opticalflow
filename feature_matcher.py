@@ -237,11 +237,11 @@ class FlowFeatureMatcher(FeatureMatcher):
         keypoints_ref = f_ref.kps
         offset_x = keypoints_ref[0][0]
         offset_y = keypoints_ref[0][1]
-        width = keypoints_ref[-1][1] + 1
+        width = Parameters.kWidth
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
             new_x = int(keypoint[0] + mv[0])
             new_y = int(keypoint[1] + mv[1])
-            match_idx = int((new_x-offset_x)*width + new_y)
+            match_idx = int(new_x + (new_y - offset_y)*width)
             if match_idx < len(f_cur.des):
                 idx1.append(match_idx)
                 idx2.append(idx_ref)

@@ -195,7 +195,7 @@ class FeatureTrackerConfigs(object):
 
     DIRECT = dict(num_features=kNumFeatures,
                   num_levels=1,
-                  scale_factor=1,
+                  scale_factor=1.2, # or 2?
                   detector_type=FeatureDetectorTypes.MOTIONVECTORS,
                   descriptor_type=FeatureDescriptorTypes.MOTIONVECTORS,
                   match_ratio_test=kRatioTest,

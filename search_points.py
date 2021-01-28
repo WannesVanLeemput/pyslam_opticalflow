@@ -118,12 +118,18 @@ def search_frame_by_projection(f_ref, f_cur,
     kd_idxs = f_cur.kd.query_ball_point(projs, radiuses)
     # projection becomes easy: get the pixel in f_cur from motion vector (descriptor of kpt)
     if opticalFlow:
-        for kpt_ref, kpt_des in zip(f_ref.kps, f_ref.des):
-            coord_ref = kpt_ref.pt
-            x_cur = coord_ref.x + kpt_des[0]
-            y_cur = coord_ref.y + kpt_des[1]
-            print(x_cur, y_cur)
-
+        idxs_ref = []
+        idxs_cur = []
+        num_matches = 0
+        for kpt_ref, kpt_des, idx_ref in zip(f_ref.kps, f_ref.des, range(len(f_ref.kps))):
+            x_cur = int(kpt_ref[0] + kpt_des[0])
+            y_cur = int(kpt_ref[1] + kpt_des[1])
+            match_idx = int(x_cur + (y_cur- Parameters.kOffsety) * Parameters.kWidth)
+            if 0 <= match_idx < len(f_cur.kps):
+                idxs_ref.append(idx_ref)
+                idxs_cur.append(match_idx)
+                num_matches += 1
+        return np.array(idxs_ref), np.array(idxs_cur), num_matches
 
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
     

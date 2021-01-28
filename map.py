@@ -333,7 +333,8 @@ class Map(object):
                     #print('color_patch.shape:',color_patch.shape)    
                                                                                   
                     color = cv2.mean(color_patch)[:3]  # compute the mean color in the patch                                                                                      
-                except IndexError:
+                except IndexError as e:
+                    print(e)
                     Printer.orange('color out of range')
                     color = (255, 0, 0)
                     

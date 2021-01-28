@@ -125,3 +125,12 @@ class Parameters(object):
     # other parameters 
     kChi2Mono = 5.991 # chi-square 2 DOFs, used for reprojection error  (Hartley Zisserman pg 119)
 
+    # optical flow parameters
+    kOffsetx = 0
+    kOffsety = 0
+    kOpticalFlow = 0
+
+    # image parameters
+    kWidth = 640
+    kHeight = 480
+

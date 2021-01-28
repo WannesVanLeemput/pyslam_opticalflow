@@ -181,9 +181,11 @@ class DirectTracker(FeatureTracker):
             offset_h = int((frame.shape[0] - h) / 2)
         if w < frame.shape[1]:
             offset_w = int(frame.shape[1] - w / 2)
+        Parameters.kOffsetx = offset_w
+        Parameters.kOffsety = offset_h
         for i in range(h):
             for j in range(w):
-                kp = cv2.KeyPoint(x=i+offset_h, y=j+offset_w, _size=1)
+                kp = cv2.KeyPoint(x=j+offset_w, y=i+offset_h, _size=1)
                 d = self.all_flow2d[0][i, j]  # motion vector
                 kps.append(kp)
                 des.append(d)

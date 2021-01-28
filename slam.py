@@ -80,6 +80,8 @@ kUseEssentialMatrixFitting = Parameters.kUseEssentialMatrixFitting
        
 kNumMinObsForKeyFrameDefault = 3
 
+kOpticalFlow = False
+
 
 if not kVerbose:
     def print(*args, **kwargs):
@@ -125,7 +127,7 @@ class Slam(object):
             Printer.orange('forcing feature matcher ratio_test to 0.8')
             tracker.matcher.ratio_test = 0.8
         if tracker.tracker_type == FeatureTrackerTypes.LK:
-            raise ValueError("You cannot use Lukas-Kanade tracker in this SLAM approach!")  
+            raise ValueError("You cannot use Lukas-Kanade tracker in this SLAM approach!")
         
         
     # @ main track method @
@@ -203,7 +205,9 @@ class Tracking(object):
         self.cur_R = None # current rotation w.r.t. world frame  
         self.cur_t = None # current translation w.r.t. world frame 
         self.trueX, self.trueY, self.trueZ = None, None, None
-        self.groundtruth = system.groundtruth  # not actually used here; could be used for evaluating performances 
+        self.groundtruth = system.groundtruth  # not actually used here; could be used for evaluating performances
+
+        self.opticalFlow = True # TODO: set this dynamically
         
         if kLogKFinfoToFile:
             self.kf_info_logger = Logging.setup_file_logger('kf_info_logger', 'kf_info.log',formatter=Logging.simple_log_formatter)
@@ -276,7 +280,8 @@ class Tracking(object):
             self.timer_seach_frame_proj.start()
             idxs_ref, idxs_cur, num_found_map_pts = search_frame_by_projection(f_ref, f_cur,
                                                                              max_reproj_distance=search_radius,
-                                                                             max_descriptor_distance=self.descriptor_distance_sigma)
+                                                                             max_descriptor_distance=self.descriptor_distance_sigma,
+                                                                             opticalFlow=self.opticalFlow)
             self.timer_seach_frame_proj.refresh()  
             self.num_matched_kps = len(idxs_cur)    
             print("# matched map points in prev frame: %d " % self.num_matched_kps)
@@ -287,7 +292,8 @@ class Tracking(object):
                 f_cur.reset_points()   
                 idxs_ref, idxs_cur, num_found_map_pts = search_frame_by_projection(f_ref, f_cur,
                                                                                  max_reproj_distance=2*search_radius,
-                                                                                 max_descriptor_distance=0.5*self.descriptor_distance_sigma)
+                                                                                 max_descriptor_distance=0.5*self.descriptor_distance_sigma,
+                                                                                 opticalFlow=self.opticalFlow)
                 self.num_matched_kps = len(idxs_cur)    
                 Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)    
                                                 
@@ -497,7 +503,9 @@ class Tracking(object):
         Printer.cyan('@tracking')
         time_start = time.time()
                 
-        # check image size is coherent with camera params 
+        # check image size is coherent with camera params
+        Parameters.kHeight = img.shape[0]
+        Parameters.kWidth = img.shape[1]
         print("img.shape: ", img.shape)
         print("camera ", self.camera.height," x ", self.camera.width)
         assert img.shape[0:2] == (self.camera.height, self.camera.width)   
