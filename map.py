@@ -38,7 +38,7 @@ from map_point import MapPoint
 from utils import Printer
 
 import g2o
-import optimizer_g2o 
+import optimizer_g2o
 
 
 kVerbose = True 
@@ -251,14 +251,16 @@ class Map(object):
             delta = Parameters.kColorPatchDelta    
             patch_extension = 1 + 2*delta   # patch_extension x patch_extension
             img_pts_start = img_coords - delta           
-            img_pts_end   = img_coords + delta
-            img_ranges = np.linspace(img_pts_start,img_pts_end,patch_extension,dtype=np.intp)[:,:].T      
+            img_pts_end = img_coords + delta
+            np.clip(img_pts_end, 0, Parameters.kWidth - 1, out=img_pts_end)
+            img_ranges = np.linspace(img_pts_start, img_pts_end, patch_extension, dtype=np.intp)[:, :].T
+
             def img_range_elem(ranges,i):      
                 return ranges[:,i]                                                  
             
             for i, p in enumerate(points3d):
                 if not mask_pts3d[i]:
-                    #print('p[%d] not good' % i)
+                    # print('p[%d] not good' % i)
                     continue
                     
                 idx1_i = idxs1[i]

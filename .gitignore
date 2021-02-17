@@ -6,6 +6,8 @@ tmp
 build
 debug.txt
 kitti
+evaluation
+poses.txt
 map.json
 config.pyc 
 thirdparty/g2opy
