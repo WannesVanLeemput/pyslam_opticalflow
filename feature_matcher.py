@@ -238,11 +238,19 @@ class FlowFeatureMatcher(FeatureMatcher):
         offset_x = keypoints_ref[0][0]
         offset_y = keypoints_ref[0][1]
         width = Parameters.kWidth
+        height = Parameters.kHeight
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
             new_x = int(keypoint[0] + mv[0])
             new_y = int(keypoint[1] + mv[1])
-            match_idx = int(new_x + (new_y - offset_y)*width)
-            if match_idx < len(f_cur.des):
+            match_idx = int(new_x + (new_y - offset_y) * width)
+            if offset_x <= new_x <= width-offset_x-1 and offset_y <= new_y <= height-offset_y-1 and match_idx < len(f_cur.des):
+                if __debug__:
+                    if new_x != int(f_cur.kps[match_idx][0]):
+                        print('Error matching frames: x-coordinate mismatch', new_x, '!=', int(f_cur.kps[match_idx][0]))
+                    if new_y != int(f_cur.kps[match_idx][1]):
+                        print('Error matching frames: y-coordinate mismatch', new_y, '!=', int(f_cur.kps[match_idx][1]))
+                # assert(new_x == f_cur.kps[match_idx][0])
+                # assert(new_y == f_cur.kps[match_idx][1])
                 idx1.append(match_idx)
                 idx2.append(idx_ref)
         return idx1, idx2

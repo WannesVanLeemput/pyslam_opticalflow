@@ -173,8 +173,9 @@ class DirectTracker(FeatureTracker):
     def detectAndCompute(self, frame, frame_id=0):
         kps = []
         des = []
-        h = self.all_flow2d[0].shape[0]
-        w = self.all_flow2d[1].shape[1]
+        current_flow = self.all_flow2d[frame_id]
+        h = current_flow.shape[0]
+        w = current_flow.shape[1]
         offset_h = 0
         offset_w = 0
         if h < frame.shape[0]:
@@ -186,7 +187,7 @@ class DirectTracker(FeatureTracker):
         for i in range(h):
             for j in range(w):
                 kp = cv2.KeyPoint(x=j+offset_w, y=i+offset_h, _size=1)
-                d = self.all_flow2d[0][i, j]  # motion vector
+                d = current_flow[i, j]  # motion vector
                 kps.append(kp)
                 des.append(d)
         return np.array(kps), np.array(des)

@@ -188,7 +188,7 @@ class Map(object):
 
     # add new points to the map from 3D point estimations, frames and pairwise matches
     # points3d is [Nx3]
-    def add_points(self, points3d, mask_pts3d, kf1, kf2, idxs1, idxs2, img1, do_check=True, cos_max_parallax=Parameters.kCosMaxParallax):
+    def add_points(self, points3d, mask_pts3d, kf1, kf2, idxs1, idxs2, img1, do_check=True, cos_max_parallax=Parameters.kCosMaxParallax): # changed do_check
         with self._lock:             
             assert(kf1.is_keyframe and  kf2.is_keyframe) # kf1 and kf2 must be keyframes 
             assert(points3d.shape[0] == len(idxs1))
