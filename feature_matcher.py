@@ -240,15 +240,15 @@ class FlowFeatureMatcher(FeatureMatcher):
         width = Parameters.kWidth
         height = Parameters.kHeight
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
-            new_x = int(keypoint[0] + mv[0])
-            new_y = int(keypoint[1] + mv[1])
-            match_idx = int(new_x + (new_y - offset_y) * width)
+            new_x = int(round(keypoint[0] + mv[0])) # + means up - down but coords are python like => - mv
+            new_y = int(round(keypoint[1] + mv[1]))
+            match_idx = int(new_y + (new_x - offset_x) * width)
             if offset_x <= new_x <= width-offset_x-1 and offset_y <= new_y <= height-offset_y-1 and match_idx < len(f_cur.des):
                 if __debug__:
                     if new_x != int(f_cur.kps[match_idx][0]):
-                        print('Error matching frames: x-coordinate mismatch', new_x, '!=', int(f_cur.kps[match_idx][0]))
+                        print('Error matching frames: height-coordinate mismatch', new_x, '!=', int(f_cur.kps[match_idx][0]))
                     if new_y != int(f_cur.kps[match_idx][1]):
-                        print('Error matching frames: y-coordinate mismatch', new_y, '!=', int(f_cur.kps[match_idx][1]))
+                        print('Error matching frames: width-coordinate mismatch', new_y, '!=', int(f_cur.kps[match_idx][1]))
                 # assert(new_x == f_cur.kps[match_idx][0])
                 # assert(new_y == f_cur.kps[match_idx][1])
                 idx1.append(match_idx)

@@ -170,7 +170,7 @@ class DirectTracker(FeatureTracker):
         self.matcher = feature_matcher_factory(type=FeatureMatcherTypes.FLOW)
 
         # we define the descriptor of the keypoint as the motion vector pointing to the next pixel
-    def detectAndCompute(self, frame, frame_id=0):
+    def detectAndCompute(self, frame, frame_id):
         kps = []
         des = []
         current_flow = self.all_flow2d[frame_id]
@@ -186,7 +186,7 @@ class DirectTracker(FeatureTracker):
         Parameters.kOffsety = offset_h
         for i in range(h):
             for j in range(w):
-                kp = cv2.KeyPoint(x=j+offset_w, y=i+offset_h, _size=1)
+                kp = cv2.KeyPoint(x=i+offset_h, y=j+offset_w, _size=1)
                 d = current_flow[i, j]  # motion vector
                 kps.append(kp)
                 des.append(d)

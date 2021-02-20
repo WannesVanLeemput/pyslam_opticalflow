@@ -546,7 +546,7 @@ class Tracking(object):
                 kf_ref.init_observations()
                 kf_cur.init_observations()
                 # add points in map 
-                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur, initializer_output.idxs_ref, img, do_check=True)
+                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur, initializer_output.idxs_ref, img, do_check=False)
                 Printer.green("map: initialized %d new points" % (new_pts_count))                 
                 # update covisibility graph connections 
                 kf_ref.update_connections()

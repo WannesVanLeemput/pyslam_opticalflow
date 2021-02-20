@@ -252,7 +252,7 @@ class Map(object):
             patch_extension = 1 + 2*delta   # patch_extension x patch_extension
             img_pts_start = img_coords - delta           
             img_pts_end = img_coords + delta
-            np.clip(img_pts_end, 0, Parameters.kWidth - 1, out=img_pts_end)
+            np.clip(img_pts_end, 0, Parameters.kHeight - 1, out=img_pts_end)
             img_ranges = np.linspace(img_pts_start, img_pts_end, patch_extension, dtype=np.intp)[:, :].T
 
             def img_range_elem(ranges,i):      
