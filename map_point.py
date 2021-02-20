@@ -122,9 +122,9 @@ class MapPointBase(object):
                 self._observations[keyframe] = idx
                 self._num_observations += 1      
                 return True 
-            #elif self._observations[keyframe] != idx:     # if the keyframe is already there but it is incoherent then fix it!
-            #    self._observations[keyframe] = idx   
-            #    return True              
+            elif self._observations[keyframe] != idx:     # if the keyframe is already there but it is incoherent then fix it! in testing!
+                self._observations[keyframe] = idx  # in testing
+                return True # in testing
             else: 
                 return False                   
 
@@ -137,7 +137,7 @@ class MapPointBase(object):
                     assert(self == keyframe.get_point_match(idx))                
                 keyframe.remove_point_match(idx)       
                 if __debug__:
-                    assert(not self in keyframe.points)   # checking there are no multiple instances                  
+                    assert(not self in keyframe.points)   # checking there are no multiple instances
             else: 
                 keyframe.remove_point(self)                
             try:

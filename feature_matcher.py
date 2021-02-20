@@ -22,7 +22,7 @@ import cv2
 from parameters import Parameters  
 from enum import Enum
 from collections import defaultdict
-
+from utils import Printer
 
 kRatioTest = Parameters.kFeatureMatchRatioTest
 kVerbose = False 
@@ -240,8 +240,8 @@ class FlowFeatureMatcher(FeatureMatcher):
         width = Parameters.kWidth
         height = Parameters.kHeight
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
-            new_x = int(round(keypoint[0] - mv[0])) # + means up - down but coords are python like => - mv
-            new_y = int(round(keypoint[1] + mv[1]))
+            new_x = int(round(keypoint[0] + mv[0]))
+            new_y = int(round(keypoint[1] - mv[1]))
             match_idx = int(new_x + (new_y - offset_y) * width)
             if offset_x <= new_x <= width-offset_x-1 and offset_y <= new_y <= height-offset_y-1 and match_idx < len(f_cur.des):
                 if __debug__:
@@ -249,10 +249,29 @@ class FlowFeatureMatcher(FeatureMatcher):
                         print('Error matching frames: height-coordinate mismatch', new_x, '!=', int(f_cur.kps[match_idx][0]))
                     if new_y != int(f_cur.kps[match_idx][1]):
                         print('Error matching frames: width-coordinate mismatch', new_y, '!=', int(f_cur.kps[match_idx][1]))
-                # assert(new_x == f_cur.kps[match_idx][0])
-                # assert(new_y == f_cur.kps[match_idx][1])
+                # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
                 idx1.append(match_idx)
                 idx2.append(idx_ref)
-        return idx1, idx2
+        inds = []
+        unq_idx1_temp = []
+        seen = set()
+        for i, ele in enumerate(idx1):
+            if ele not in seen:
+                inds.append(i)
+                unq_idx1_temp.append(ele)
+                seen.add(ele)
+        unq_idx2_temp = list(np.array(idx2)[inds])
+        inds = []
+        seen = set()
+        unq_idx2 = []
+        for i, ele in enumerate(unq_idx2_temp):
+            if ele not in seen:
+                inds.append(i)
+                unq_idx2.append(ele)
+                seen.add(ele)
+        unq_idx1 = list(np.array(unq_idx1_temp)[inds])
+        if len(unq_idx1) != len(set(unq_idx1)) or len(unq_idx2) != len(set(unq_idx2)):
+            Printer.red("WARNING: matched keypoint multiple times, will result in BA error later!")
+        return unq_idx1, unq_idx2
 
 

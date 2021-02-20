@@ -545,8 +545,12 @@ class Tracking(object):
                 self.map.add_keyframe(kf_cur) # add second keyframe in map and update its kid                        
                 kf_ref.init_observations()
                 kf_cur.init_observations()
+                if __debug__:
+                    if len(initializer_output.idxs_cur) != len(set(initializer_output.idxs_cur)) or \
+                            len(initializer_output.idxs_ref) != len(set(initializer_output.idxs_ref)):
+                        print("Duplicate point matches in initializer!")
                 # add points in map 
-                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur, initializer_output.idxs_ref, img, do_check=False)
+                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur, initializer_output.idxs_ref, img, do_check=True)
                 Printer.green("map: initialized %d new points" % (new_pts_count))                 
                 # update covisibility graph connections 
                 kf_ref.update_connections()
