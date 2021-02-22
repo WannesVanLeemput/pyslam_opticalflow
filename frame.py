@@ -512,9 +512,9 @@ class Frame(FrameBase):
                         lfid = f.id                    
                     if len(pts) > 1:
                         cv2.polylines(img, np.array([pts], dtype=np.int32), False, myjet[len(pts)]*255, thickness=1, lineType=16)
-                else:
+               # else:
                     # no corresponding 3D point
-                    cv2.circle(img, uv, color=(0, 0, 0), radius=2) #radius=radius)
+                    # cv2.circle(img, uv, color=(0, 0, 0), radius=2) #radius=radius)
             return img    
         
     # draw tracked features on the image
