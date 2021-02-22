@@ -244,7 +244,7 @@ class Map(object):
                                                        (scale_factors_x_depths2 > scale_factors_x_depths1_x_ratio_scale_consistency) )   
                 
                 # combine all checks 
-                bad_points = bad_cos_parallaxs | bad_depths1 | bad_depths2 | bad_chis2_1 | bad_chis2_2 | bad_scale_consistency                                                           
+                bad_points = bad_depths1 | bad_depths2 | bad_chis2_1 | bad_chis2_2 | bad_scale_consistency # | bad_cos_parallaxs
             
             img_coords = np.rint(kf1.kps[idxs1]).astype(np.intp) # image keypoints coordinates 
             # build img patches coordinates 

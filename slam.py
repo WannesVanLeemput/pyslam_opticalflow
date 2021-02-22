@@ -620,7 +620,7 @@ class Tracking(object):
                                             
             # now, having a better estimate of f_cur pose, we can find more map point matches: 
             # find matches between {local map points} (points in the local map) and {unmatched keypoints of f_cur}
-            if self.pose_is_ok: 
+            if self.pose_is_ok:
                 self.track_local_map(f_cur)
                 
         # end block {with self.map.update_lock:}

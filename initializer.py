@@ -36,7 +36,7 @@ from parameters import Parameters
 
 
 kVerbose=True     
-kRansacThresholdNormalized = 0.0003  # metric threshold used for normalized image coordinates 
+kRansacThresholdNormalized = 0.0003  # metric threshold used for normalized image coordinates
 kRansacProb = 0.999
 
 kMaxIdDistBetweenIntializingFrames = 5   # N.B.: worse performances with values smaller than 5!
