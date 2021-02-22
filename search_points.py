@@ -319,7 +319,7 @@ def search_all_map_by_projection(map, f_cur):
 # search for matches between unmatched keypoints (without a corresponding map point)
 # in input we have already some pose estimates for f1 and f2
 def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None, 
-                                   max_descriptor_distance=0.5*Parameters.kMaxDescriptorDistance):   
+                                   max_descriptor_distance=Parameters.kMaxDescriptorDistance):   # dropped * 0.5
     idxs2_out = []
     idxs1_out = []
     num_found_matches = 0

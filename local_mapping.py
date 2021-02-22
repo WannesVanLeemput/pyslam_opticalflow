@@ -363,7 +363,7 @@ class LocalMapping(object):
             # find keypoint matches between self.kf_cur and kf
             # N.B.: all the matched keypoints computed by search_frame_for_triangulation() are without a corresponding map point              
             idxs_cur, idxs, num_found_matches, _ = search_frame_for_triangulation(self.kf_cur, kf, idxs_kf_cur, idxs_kf,
-                                                                                   max_descriptor_distance=0.5*self.descriptor_distance_sigma)
+                                                                                   max_descriptor_distance=self.descriptor_distance_sigma) # dropped * 0.5
                         
             if len(idxs_cur) > 0:
                 # try to triangulate the matched keypoints that do not have a corresponding map point   

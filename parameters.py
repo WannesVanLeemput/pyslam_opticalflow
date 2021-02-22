@@ -59,7 +59,7 @@ class Parameters(object):
 
     # Initializer 
     kInitializerDesiredMedianDepth = 20    # when initializing, the initial median depth is computed and forced to this value (for better visualization is > 1) 
-    kMinRatioBaselineDepth = 0.01 
+    kMinRatioBaselineDepth = 0.001
     #kMinTraslation = 0.01*kInitializerDesiredMedianDepth  # not used at the present time     
     kInitializerNumMinFeatures = 100
     kInitializerNumMinTriangulatedPoints = 100
@@ -67,10 +67,10 @@ class Parameters(object):
 
 
     # Tracking 
-    kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)  
+    kUseMotionModel = False                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
-    kMinNumMatchedFeaturesSearchFrameByProjection=20  # if the number of tracked features is below this, then the search fails 
-    kUseEssentialMatrixFitting = False               # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
+    kMinNumMatchedFeaturesSearchFrameByProjection=3  # if the number of tracked features is below this, then the search fails
+    kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
                                                       # WARNING: essential matrix fitting comes with some limitations (please, read the comments of the method slam.estimate_pose_ess_mat())
     kMaxNumOfKeyframesInLocalMap = 80
     kNumBestCovisibilityKeyFrames = 10
@@ -86,7 +86,7 @@ class Parameters(object):
 
 
     # Search matches by projection 
-    kMaxReprojectionDistanceFrame=7   #7   # [pixels]    o:7
+    kMaxReprojectionDistanceFrame=1   #7   # [pixels]    o:7
     kMaxReprojectionDistanceMap=3   #2.5 # [pixels]    o:1,(rgbd)3,(reloc)5 => mainly 2.5*th where th acts as a multiplicative factor 
     kMaxReprojectionDistanceFuse=3  #3   # [pixels]    o:3
     #
@@ -94,7 +94,7 @@ class Parameters(object):
     kMatchRatioTestEpipolarLine=0.8      # used just for test function find_matches_along_line()
     #
     # Reference max descriptor distance (used for initial checks and then updated and adapted)                   
-    kMaxDescriptorDistance=0 # it is updated by feature_manager.py at runtime 
+    kMaxDescriptorDistance=5 # it is updated by feature_manager.py at runtime
     
 
     # Search matches for triangulation by using epipolar lines 
@@ -133,4 +133,7 @@ class Parameters(object):
     # image parameters
     kWidth = 640
     kHeight = 480
+
+    # optical flow stride
+    kStride = 10
 

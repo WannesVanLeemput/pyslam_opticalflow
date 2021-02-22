@@ -63,7 +63,7 @@ kTrackingWaitForLocalMappingSleepTime = Parameters.kTrackingWaitForLocalMappingS
 
 kLogKFinfoToFile = True 
 
-kUseDynamicDesDistanceTh = True  
+kUseDynamicDesDistanceTh = False
 
 kRansacThresholdNormalized = 0.0003  # 0.0003 # metric threshold used for normalized image coordinates 
 kRansacProb = 0.999
@@ -80,7 +80,7 @@ kUseEssentialMatrixFitting = Parameters.kUseEssentialMatrixFitting
        
 kNumMinObsForKeyFrameDefault = 3
 
-kOpticalFlow = False
+kOpticalFlow = True
 
 
 if not kVerbose:
