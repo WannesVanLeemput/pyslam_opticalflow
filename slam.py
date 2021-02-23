@@ -72,7 +72,7 @@ kNumMinInliersEssentialMat = 8
 kUseGroundTruthScale = False 
 
 kNumMinInliersPoseOptimizationTrackFrame = 10
-kNumMinInliersPoseOptimizationTrackLocalMap = 20
+kNumMinInliersPoseOptimizationTrackLocalMap = 15
 
 kUseMotionModel = Parameters.kUseMotionModel or Parameters.kUseSearchFrameByProjection
 kUseSearchFrameByProjection = Parameters.kUseSearchFrameByProjection and not Parameters.kUseEssentialMatrixFitting         
