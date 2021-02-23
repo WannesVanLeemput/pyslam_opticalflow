@@ -261,7 +261,8 @@ class Frame(FrameBase):
         self.octaves = None      # keypoint octaves                      [Nx1]
         self.sizes   = None      # keypoint sizes                        [Nx1] 
         self.angles  = None      # keypoint sizes                        [Nx1]         
-        self.des     = None      # keypoint descriptors                  [NxD] where D is the descriptor length 
+        self.des     = None      # keypoint descriptors                  [NxD] where D is the descriptor length
+        self.mvs = None          # keypoint motion vectors               [Nx2]
 
         # map points information arrays 
         self.points   = None      # map points => self.points[idx] (if is not None) is the map point matched with self.kps[idx]
@@ -277,7 +278,7 @@ class Frame(FrameBase):
                 self.img = None                    
             if kps_data is None:
                 if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
-                    self.kps, self.des = Frame.tracker.detectAndCompute(img, self.id)
+                    self.kps, self.des, self.mvs = Frame.tracker.detectAndCompute(img, self.id)
                 else:
                     self.kps, self.des = Frame.tracker.detectAndCompute(img)
                 # convert from a list of keypoints to arrays of points, octaves, sizes  

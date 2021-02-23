@@ -172,7 +172,8 @@ class KeyFrame(Frame,KeyFrameGraph):
         self.octaves = frame.octaves  # keypoint octaves                      [Nx1]
         self.sizes   = frame.sizes    # keypoint sizes                        [Nx1] 
         self.angles  = frame.angles   # keypoint angles                       [Nx1] 
-        self.des     = frame.des      # keypoint descriptors                  [NxD] where D is the descriptor length 
+        self.des     = frame.des      # keypoint descriptors                  [NxD] where D is the descriptor length
+        self.mvs     = frame.mvs      # keypoint motion vectors               [Nx2]
         
         if hasattr(frame, '_kd'):     
             self._kd = frame._kd 

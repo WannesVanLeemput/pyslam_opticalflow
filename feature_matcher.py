@@ -233,7 +233,7 @@ class FlowFeatureMatcher(FeatureMatcher):
         # assert type(f_cur) == Frame.__class__ # for debugging purposes
         idx1 = []
         idx2 = []
-        motion_vectors = f_ref.des
+        motion_vectors = f_ref.mvs
         keypoints_ref = f_ref.kps
         offset_x = keypoints_ref[0][0]
         offset_y = keypoints_ref[0][1]

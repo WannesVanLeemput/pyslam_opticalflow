@@ -36,8 +36,8 @@ class Parameters(object):
     
 
     # Point triangulation 
-    kCosMaxParallaxInitializer= 0.999998  # 0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
-    kCosMaxParallax= 0.99999 # 0.9998                 # max cos angle for triangulation (min parallax angle)
+    kCosMaxParallaxInitializer= 0.99999  # 0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
+    kCosMaxParallax= 0.9999 # 0.9998                 # max cos angle for triangulation (min parallax angle)
     
     
     # Point visibility 
@@ -67,7 +67,7 @@ class Parameters(object):
 
 
     # Tracking 
-    kUseMotionModel = False                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
+    kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
     kMinNumMatchedFeaturesSearchFrameByProjection=3  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
@@ -135,5 +135,5 @@ class Parameters(object):
     kHeight = 480
 
     # optical flow stride
-    kStride = 2
+    kStride = 5
 

@@ -170,10 +170,12 @@ class DirectTracker(FeatureTracker):
             self.all_flow2d.append(flow2d)  # switch to OpenCV coordinate system
         self.matcher = feature_matcher_factory(type=FeatureMatcherTypes.FLOW)
 
-        # we define the descriptor of the keypoint as the motion vector pointing to the next pixel
+        # 1st try: we define the descriptor of the keypoint as the motion vector pointing to the next pixel
+        # 2nd try: descriptor is mean color in pixel neighbourhood, mv is a separate field
     def detectAndCompute(self, frame, frame_id):
         kps = []
         des = []
+        mvs = []
         current_flow = self.all_flow2d[frame_id]
         h = current_flow.shape[0]
         w = current_flow.shape[1]
@@ -189,9 +191,11 @@ class DirectTracker(FeatureTracker):
             for j in range(w):
                 kp = cv2.KeyPoint(x=j+offset_w, y=i+offset_h, _size=1)
                 d = current_flow[i, j]  # motion vector
+                color = frame[i, j]
                 kps.append(kp)
-                des.append(d)
-        return np.array(kps), np.array(des)
+                mvs.append(d)
+                des.append(color)
+        return np.array(kps), np.array(des), np.array(mvs)
 
 
 # Lucas-Kanade Tracker: it uses raw pixel patches as "descriptors" and track/"match" by using Lucas Kanade pyr optic flow
