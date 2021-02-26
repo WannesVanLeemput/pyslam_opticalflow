@@ -103,8 +103,11 @@ if __name__ == "__main__":
             if img is None:
                 print('image is empty')
                 getchar()
-            timestamp = dataset.getTimestamp()          # get current timestamp 
-            next_timestamp = dataset.getNextTimestamp() # get next timestamp 
+            if img_id == 0:
+                timestamp = 0
+                next_timestamp = 0
+            timestamp = next_timestamp #dataset.getTimestamp()          # get current timestamp
+            next_timestamp = timestamp + 0.08 #dataset.getNextTimestamp() # get next timestamp
             frame_duration = next_timestamp-timestamp 
 
             if img is not None:

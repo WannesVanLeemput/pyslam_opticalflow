@@ -72,7 +72,7 @@ kNumMinInliersEssentialMat = 8
 kUseGroundTruthScale = False 
 
 kNumMinInliersPoseOptimizationTrackFrame = 10
-kNumMinInliersPoseOptimizationTrackLocalMap = 15
+kNumMinInliersPoseOptimizationTrackLocalMap = 10
 
 kUseMotionModel = Parameters.kUseMotionModel or Parameters.kUseSearchFrameByProjection
 kUseSearchFrameByProjection = Parameters.kUseSearchFrameByProjection and not Parameters.kUseEssentialMatrixFitting         
@@ -529,6 +529,14 @@ class Tracking(object):
             # push first frame in the inizializer 
             self.intializer.init(f_cur) 
             self.state = SlamState.NOT_INITIALIZED
+            x = self.f_cur.quaternion.x()
+            y = self.f_cur.quaternion.y()
+            z = self.f_cur.quaternion.z()
+            w = self.f_cur.quaternion.w()
+            translation = self.f_cur.position
+            file = open("poses.txt", 'a')
+            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            file.close()
             return # EXIT (jump to second frame)
         
         if self.state == SlamState.NOT_INITIALIZED:
@@ -571,7 +579,16 @@ class Tracking(object):
                 self.intializer.reset()
                 
                 if kUseDynamicDesDistanceTh: 
-                    self.descriptor_distance_sigma = self.dyn_config.update_descriptor_stat(kf_ref, kf_cur, initializer_output.idxs_ref, initializer_output.idxs_cur)                     
+                    self.descriptor_distance_sigma = self.dyn_config.update_descriptor_stat(kf_ref, kf_cur, initializer_output.idxs_ref, initializer_output.idxs_cur)
+
+                x = self.f_cur.quaternion.x()
+                y = self.f_cur.quaternion.y()
+                z = self.f_cur.quaternion.z()
+                w = self.f_cur.quaternion.w()
+                translation = self.f_cur.position
+                file = open("poses.txt", 'a')
+                file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+                file.close()
             return # EXIT (jump to next frame)
         
         # get previous frame in map as reference        

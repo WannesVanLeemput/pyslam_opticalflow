@@ -36,7 +36,7 @@ class Parameters(object):
     
 
     # Point triangulation 
-    kCosMaxParallaxInitializer= 0.99999  # 0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
+    kCosMaxParallaxInitializer= 0.99998  # 0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
     kCosMaxParallax= 0.9999 # 0.9998                 # max cos angle for triangulation (min parallax angle)
     
     
@@ -135,5 +135,5 @@ class Parameters(object):
     kHeight = 480
 
     # optical flow stride
-    kStride = 5
+    kStride = 2
 
