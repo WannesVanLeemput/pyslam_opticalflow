@@ -5,7 +5,10 @@ __pycache__
 tmp
 build
 debug.txt
+poses.txt
+.idea
 kitti
+evaluation
 map.json
 config.pyc 
 thirdparty/g2opy
