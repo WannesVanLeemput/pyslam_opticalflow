@@ -521,6 +521,16 @@ class Tracking(object):
             # push first frame in the inizializer 
             self.intializer.init(f_cur) 
             self.state = SlamState.NOT_INITIALIZED
+
+            x = self.f_cur.quaternion.x()
+            y = self.f_cur.quaternion.y()
+            z = self.f_cur.quaternion.z()
+            w = self.f_cur.quaternion.w()
+            translation = self.f_cur.position
+            file = open("poses.txt", 'a')
+            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            file.close()
+
             return # EXIT (jump to second frame)
         
         if self.state == SlamState.NOT_INITIALIZED:
@@ -555,7 +565,16 @@ class Tracking(object):
                 self.update_tracking_history()
                 self.motion_model.update_pose(kf_cur.timestamp,kf_cur.position,kf_cur.quaternion)
                 self.motion_model.is_ok = False   # after initialization you cannot use motion model for next frame pose prediction (time ids of initialized poses may not be consecutive)
-                
+
+                x = self.f_cur.quaternion.x()
+                y = self.f_cur.quaternion.y()
+                z = self.f_cur.quaternion.z()
+                w = self.f_cur.quaternion.w()
+                translation = self.f_cur.position
+                file = open("poses.txt", 'a')
+                file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+                file.close()
+
                 self.intializer.reset()
                 
                 if kUseDynamicDesDistanceTh: 
@@ -666,7 +685,17 @@ class Tracking(object):
             if self.f_cur.kf_ref is None:
                 self.f_cur.kf_ref = self.kf_ref  
                                     
-            self.update_tracking_history()    # must stay after having updated slam state (self.state)                                                                  
+            self.update_tracking_history()    # must stay after having updated slam state (self.state)
+
+            # write pose to txt file
+            x = self.f_cur.quaternion.x()
+            y = self.f_cur.quaternion.y()
+            z = self.f_cur.quaternion.z()
+            w = self.f_cur.quaternion.w()
+            translation = self.f_cur.position
+            file = open("poses.txt", 'a')
+            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            file.close()
                     
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
             #self.update_history()

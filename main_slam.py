@@ -88,7 +88,10 @@ if __name__ == "__main__":
     matched_points_plt = Mplot2d(xlabel='img id', ylabel='# matches',title='# matches')    
 
     do_step = False   
-    is_paused = False 
+    is_paused = False
+
+    timestamp = 0
+    next_timestamp = 0
     
     img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed 
     while dataset.isOk():
@@ -100,8 +103,8 @@ if __name__ == "__main__":
             if img is None:
                 print('image is empty')
                 getchar()
-            timestamp = dataset.getTimestamp()          # get current timestamp 
-            next_timestamp = dataset.getNextTimestamp() # get next timestamp 
+            timestamp = next_timestamp          # get current timestamp
+            next_timestamp = timestamp + 0.08 # get next timestamp
             frame_duration = next_timestamp-timestamp 
 
             if img is not None:
