@@ -24,20 +24,20 @@ List of shared parameters
 class Parameters(object):   
     
     # SLAM threads 
-    kLocalMappingOnSeparateThread=True           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread 
+    kLocalMappingOnSeparateThread=False           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread
     kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=0.5 # 0.5  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
-    kLocalMappingParallelKpsMatchingNumWorkers=4
+    kLocalMappingParallelKpsMatchingNumWorkers=10
     
     
     # Number of desired keypoints per frame 
-    kNumFeatures=2000
+    kNumFeatures=3000
     
 
     # Point triangulation 
     kCosMaxParallaxInitializer=0.99998  # 0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
-    kCosMaxParallax=0.9999 # 0.9998                 # max cos angle for triangulation (min parallax angle)   
+    kCosMaxParallax=0.9998 # 0.9998                 # max cos angle for triangulation (min parallax angle)
     
     
     # Point visibility 
@@ -67,7 +67,7 @@ class Parameters(object):
 
 
     # Tracking 
-    kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)  
+    kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
     kMinNumMatchedFeaturesSearchFrameByProjection=20  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False                # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm), 

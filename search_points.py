@@ -20,7 +20,8 @@
 import sys 
 import math 
 import numpy as np
-import cv2 
+import cv2
+import csv
 
 from frame import Frame 
 from map_point import predict_detection_levels
@@ -189,9 +190,23 @@ def search_frame_by_projection(f_ref, f_cur,
         idxs_ref = np.array(idxs_ref)[valid_match_idxs]
         idxs_cur = np.array(idxs_cur)[valid_match_idxs]
         found_pts_count = len(valid_match_idxs)
+
+    calculate_and_write_motion_vectors(f_cur, f_ref, idxs_cur, idxs_ref)
     
     return np.array(idxs_ref), np.array(idxs_cur), found_pts_count
-    #return idxs_ref, idxs_cur, found_pts_count 
+    #return idxs_ref, idxs_cur, found_pts_count
+
+
+# calculate motion vectors of keypoints (solely for debugging purposes)
+def calculate_and_write_motion_vectors(f_cur, f_ref, idxs_cur, idxs_ref):
+    filename = 'motionvectors/' + str(f_ref.id) + '_' + str(f_cur.id) + '_mvs.csv'
+    with open(filename, mode='w') as writefile:
+        mv_writer = csv.writer(writefile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for idx_ref, idx_cur in zip(idxs_ref, idxs_cur):
+            coord_ref = f_ref.kps[idx_ref]
+            coord_cur = f_cur.kps[idx_cur]
+            mv_writer.writerow([coord_ref, coord_cur, coord_cur[0] - coord_ref[0], coord_cur[1] - coord_ref[1]])
+
 
 
 # search by projection matches between {input map points} and {unmatched keypoints of frame f_cur}, (access frame from tracking thread, no need to lock)

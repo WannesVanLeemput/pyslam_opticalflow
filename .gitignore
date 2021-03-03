@@ -9,6 +9,8 @@ poses.txt
 .idea
 kitti
 evaluation
+motionvectors
+custom scripts
 map.json
 config.pyc 
 thirdparty/g2opy
