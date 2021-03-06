@@ -117,19 +117,40 @@ def search_frame_by_projection(f_ref, f_cur,
     radiuses = max_reproj_distance * kp_ref_scale_factors     
     kd_idxs = f_cur.kd.query_ball_point(projs, radiuses)
     # projection becomes easy: get the pixel in f_cur from motion vector (descriptor of kpt)
-#    if opticalFlow:
-#        idxs_ref = []
-#        idxs_cur = []
-#        num_matches = 0
-#        for kpt_ref, kpt_des, idx_ref in zip(f_ref.kps, f_ref.des, range(len(f_ref.kps))):
-#            x_cur = int(kpt_ref[0] + kpt_des[0])
-#            y_cur = int(kpt_ref[1] + kpt_des[1])
-#            match_idx = int(x_cur + (y_cur - Parameters.kOffsety) * Parameters.kWidth)
-#            if 0 <= match_idx < len(f_cur.kps):
-#                idxs_ref.append(idx_ref)
-#                idxs_cur.append(match_idx)
-#                num_matches += 1
-#        return np.array(idxs_ref), np.array(idxs_cur), num_matches
+    if opticalFlow:
+        idxs_ref = []
+        idxs_cur = []
+        num_matches = 0
+        for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
+#            if f_ref.id == f_ref.kf_ref.id:
+#                kp_ref_idx = p.get_observation_idx(f_ref.kf_ref)
+#            else:
+            frame_views = p.frame_views()
+            for tup in frame_views:
+                if tup[0] == f_ref:
+                    kp_ref_idx = tup[1]
+            kp_ref = f_ref.kps[kp_ref_idx]
+            mv_ref = f_ref.mvs[kp_ref_idx]
+            new_x = int(kp_ref[0] + mv_ref[0])
+            new_y = int(kp_ref[1] - mv_ref[1])
+            offset_y = 16 # TODO: make this dynamic
+            offset_x = 0
+            match_idx = int(new_x + (new_y - offset_y) * Parameters.kWidth)
+            if offset_x <= new_x <= Parameters.kWidth - offset_x - 1 and offset_y <= new_y <= Parameters.kHeight - offset_y - 1 and match_idx < len(
+                    f_cur.des):
+                if __debug__:
+                    if new_x != int(f_cur.kps[match_idx][0]):
+                        print('Error in search frame: height-coordinate mismatch', new_x, '!=',
+                              int(f_cur.kps[match_idx][0]))
+                    if new_y != int(f_cur.kps[match_idx][1]):
+                        print('Error in search frame: width-coordinate mismatch', new_y, '!=',
+                              int(f_cur.kps[match_idx][1]))
+                # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
+            if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
+                idxs_ref.append(i)
+                idxs_cur.append(match_idx)
+                num_matches += 1
+        return np.array(idxs_ref), np.array(idxs_cur), num_matches
 
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
     
@@ -146,7 +167,9 @@ def search_frame_by_projection(f_ref, f_cur,
         #best_level2 = -1                   
         best_k_idx = -1   
         best_ref_idx = -1          
-                
+
+
+
         #for kd_idx in f_cur.kd.query_ball_point(projs[j], radius):            
         for kd_idx in kd_idxs[j]:                   
             

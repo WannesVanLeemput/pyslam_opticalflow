@@ -135,5 +135,5 @@ class Parameters(object):
     kHeight = 480
 
     # optical flow stride
-    kStride = 2
+    kStride = 5
 
