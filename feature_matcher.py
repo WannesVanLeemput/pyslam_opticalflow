@@ -240,9 +240,10 @@ class FlowFeatureMatcher(FeatureMatcher):
         width = Parameters.kWidth
         height = Parameters.kHeight
         count = 0
-        stride = Parameters.kStride
+        stride_h = Parameters.kStrideHorizontal
+        stride_v = Parameters.kStrideVertical
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
-            if count % stride == 0:
+            if keypoint[0] % stride_h == 0 and keypoint[1] % stride_v == 0:
                 new_x = int(round(keypoint[0] + mv[0]))
                 new_y = int(round(keypoint[1] - mv[1]))
                 match_idx = int(new_x + (new_y - offset_y) * width)
