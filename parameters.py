@@ -25,10 +25,10 @@ class Parameters(object):
     
     # SLAM threads 
     kLocalMappingOnSeparateThread=True           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread 
-    kTrackingWaitForLocalMappingToGetIdle=False
+    kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=0.5  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
-    kLocalMappingParallelKpsMatchingNumWorkers=10
+    kLocalMappingParallelKpsMatchingNumWorkers=8
     
     
     # Number of desired keypoints per frame 
@@ -69,7 +69,7 @@ class Parameters(object):
     # Tracking 
     kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
-    kMinNumMatchedFeaturesSearchFrameByProjection=3  # if the number of tracked features is below this, then the search fails
+    kMinNumMatchedFeaturesSearchFrameByProjection=10  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
                                                       # WARNING: essential matrix fitting comes with some limitations (please, read the comments of the method slam.estimate_pose_ess_mat())
     kMaxNumOfKeyframesInLocalMap = 80
@@ -78,7 +78,7 @@ class Parameters(object):
     
     # Keyframe generation 
     kNumMinPointsForNewKf = 15  # minimum number of matched map points for spawning a new KeyFrame 
-    kThNewKfRefRatio = 0.9      # for determining if a new KF must be spawned  
+    kThNewKfRefRatio = 0.7      # for determining if a new KF must be spawned
     
     
     # Keyframe culling
@@ -113,7 +113,7 @@ class Parameters(object):
     
     # Bundle Adjustment (BA)
     kLocalBAWindow=20                 #  [# frames]   
-    kUseLargeWindowBA=False           # True: perform BA over a large window; False: do not perform large window BA       
+    kUseLargeWindowBA=True           # True: perform BA over a large window; False: do not perform large window BA
     kEveryNumFramesLargeWindowBA=10   # num of frames between two large window BA  
     kLargeBAWindow=20                 #  [# frames] 
         

@@ -49,7 +49,7 @@ from utils_geom import triangulate_normalized_points
 
 
 kVerbose=True     
-kTimerVerbose = False 
+kTimerVerbose = True
 
 kLocalMappingOnSeparateThread = Parameters.kLocalMappingOnSeparateThread 
 

@@ -122,13 +122,16 @@ def search_frame_by_projection(f_ref, f_cur,
         idxs_cur = []
         num_matches = 0
         for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
-#            if f_ref.id == f_ref.kf_ref.id:
-#                kp_ref_idx = p.get_observation_idx(f_ref.kf_ref)
-#            else:
-            frame_views = p.frame_views()
-            for tup in frame_views:
-                if tup[0] == f_ref:
-                    kp_ref_idx = tup[1]
+            kp_ref_idx = -1
+            if f_ref.id == f_ref.kf_ref.id and f_ref.kf_ref in p.keyframes():
+                kp_ref_idx = p.get_observation_idx(f_ref.kf_ref)
+            else:
+                frame_views = p.frame_views()
+                for tup in frame_views:
+                    if tup[0] == f_ref:
+                        kp_ref_idx = tup[1]
+            if kp_ref_idx == -1:
+                continue
             kp_ref = f_ref.kps[kp_ref_idx]
             mv_ref = f_ref.mvs[kp_ref_idx]
             new_x = int(kp_ref[0] + mv_ref[0])
@@ -236,7 +239,7 @@ def search_frame_by_projection(f_ref, f_cur,
 def search_map_by_projection(points, f_cur, 
                              max_reproj_distance=Parameters.kMaxReprojectionDistanceMap, 
                              max_descriptor_distance=Parameters.kMaxDescriptorDistance,
-                             ratio_test=Parameters.kMatchRatioTestMap):
+                             ratio_test=Parameters.kMatchRatioTestMap, opticalFlow = False):
     Ow = f_cur.Ow 
     
     found_pts_count = 0
@@ -262,7 +265,7 @@ def search_map_by_projection(points, f_cur,
             continue
         
         p.increase_visible()
-        
+
         # predicted_level = p.predict_detection_level(dists[i])     
         predicted_level = predicted_levels[i]        
         # kp_scale_factor = Frame.feature_manager.scale_factors[predicted_level]              
@@ -276,7 +279,7 @@ def search_map_by_projection(points, f_cur,
 
         # find closest keypoints of f_cur        
         #for kd_idx in f_cur.kd.query_ball_point(projs[i], radius):
-        #for kd_idx in f_cur.kd.query_ball_point(proj, radius):  
+        #for kd_idx in f_cur.kd.query_ball_point(proj, radius):
         for kd_idx in kd_idxs[i]:
      
             p_f = f_cur.points[kd_idx]
