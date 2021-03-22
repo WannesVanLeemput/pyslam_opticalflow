@@ -25,9 +25,9 @@ class Parameters(object):
     
     # SLAM threads 
     kLocalMappingOnSeparateThread=False           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread
-    kTrackingWaitForLocalMappingToGetIdle=True
+    kTrackingWaitForLocalMappingToGetIdle=False
     kTrackingWaitForLocalMappingSleepTime=0.5 # 0.5  # -1 for no sleep # [s]
-    kLocalMappingParallelKpsMatching=True
+    kLocalMappingParallelKpsMatching=False
     kLocalMappingParallelKpsMatchingNumWorkers=10
     
     
@@ -50,7 +50,7 @@ class Parameters(object):
     # Feature management
     kSigmaLevel0 = 1.0                        # default value; can be changed by selected feature        
     kFeatureMatchRatioTest = 0.7              
-    #kFeatureMatchRatioTestInitializer        # ratio test used by Initializer 
+    #kFeatureMatchRatioTestInitializer        # ratio test used by Initializer
     #
     kKdtNmsRadius = 3 # pixels  #3        # radius for kd-tree based Non-Maxima Suppression
     #
@@ -63,7 +63,7 @@ class Parameters(object):
     #kMinTraslation = 0.01*kInitializerDesiredMedianDepth  # not used at the present time     
     kInitializerNumMinFeatures = 100
     kInitializerNumMinTriangulatedPoints = 100
-    kFeatureMatchRatioTestInitializer = 0.8   # ratio test used by Initializer        
+    kFeatureMatchRatioTestInitializer = 0.8   # ratio test used by Initializer
 
 
     # Tracking 
@@ -90,7 +90,7 @@ class Parameters(object):
     kMaxReprojectionDistanceMap=3   #2.5 # [pixels]    o:1,(rgbd)3,(reloc)5 => mainly 2.5*th where th acts as a multiplicative factor 
     kMaxReprojectionDistanceFuse=3  #3   # [pixels]    o:3
     #
-    kMatchRatioTestMap=0.8
+    kMatchRatioTestMap=0.75          # used for Lowe's ratio
     kMatchRatioTestEpipolarLine=0.8      # used just for test function find_matches_along_line()
     #
     # Reference max descriptor distance (used for initial checks and then updated and adapted)                   
@@ -113,7 +113,7 @@ class Parameters(object):
     
     # Bundle Adjustment (BA)
     kLocalBAWindow=20                 #  [# frames]   
-    kUseLargeWindowBA=False           # True: perform BA over a large window; False: do not perform large window BA       
+    kUseLargeWindowBA=True           # True: perform BA over a large window; False: do not perform large window BA
     kEveryNumFramesLargeWindowBA=10   # num of frames between two large window BA  
     kLargeBAWindow=20                 #  [# frames] 
         
