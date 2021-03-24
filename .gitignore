@@ -8,7 +8,6 @@ debug.txt
 kitti
 evaluation
 motionvectors
-custom scripts
 poses.txt
 map.json
 config.pyc 
