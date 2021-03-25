@@ -1,8 +1,6 @@
-#!/usr/bin/python
-
 import sys
-sys.path.insert(0, '/home/wannes/GitHub/pyslam/thirdparty/flowlib')
-
+import os
+sys.path.append(os.path.abspath('/Users/wannesvanleemput/Documents/School/Thesis/pyslam/thirdparty/flowlib/'))
 import numpy as np
 import pandas as pd
 import csv
@@ -10,9 +8,9 @@ import flowlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import glob
-import os
 
-DEBUG = True
+DEBUG = False
+MAC = True
 
 
 def parse_csv(csvfile):
@@ -71,6 +69,23 @@ def block_matching(orb, flow, blocksize, width, height):
         block_y += 1
         block_x = 0
     return block_scores
+
+
+def calculate_block_matching_mse(image1, image2, vectors, blocksize):
+    mse = 0
+    height, width, _ = vectors.shape
+    for x in range(16, width):
+        for y in range(16, height):
+            new_x = int(round(x + vectors[y, x][0]))
+            new_y = int(round(y - vectors[y, x][1]))
+            block_error = 0
+            for i, l in zip(range(min(0, x - blocksize//2), min(width, x+blocksize//2)), range(min(0, new_x - blocksize // 2),min(width, new_x + blocksize //2))):
+                for j, k in zip(range(min(0, y - blocksize//2), min(height, y + blocksize//2)), range(min(0, new_y - blocksize//2), min(height, new_y + blocksize//2))):
+                    block_error += np.power(image1[i, j][:3] - image2[l, k][3], 2)
+            mse += (block_error/np.power(blocksize, 2))
+            print(block_error/np.power(blocksize, 2))
+    return mse/vectors.size
+
 
 
 def show_image_vectors(image, orb, flow, id):
@@ -140,6 +155,12 @@ if __name__ == '__main__':
         main('/home/wannes/storage/agent_1/motionvectors/orb2_6000',
              '/home/wannes/storage/agent_1/flow',
              '/home/wannes/storage/agent_1/rgb/images')
+    elif MAC:
+        img1 = plt.imread('/Users/wannesvanleemput/OneDrive - UGent/Master 2/Thesis/storage/agent_1/rgb/GDumper_A/Agent00052.png')
+        img2 = plt.imread('/Users/wannesvanleemput/OneDrive - UGent/Master 2/Thesis/storage/agent_1/rgb/GDumper_A/Agent00053.png')
+        mvs = flownet_mvs = flowlib.read_flow('/Users/wannesvanleemput/OneDrive - UGent/Master 2/Thesis/flow/flowfiles/agent_1/inference/run.epoch-0-flow-field/000051.flo')
+        mse = calculate_block_matching_mse(img1, img2, mvs, 7)
+        print(mse)
     else:
         if len(sys.argv) != 3:
             print("Usage: 'path to CSV file with mvs' 'path to flo file with mvs'")
