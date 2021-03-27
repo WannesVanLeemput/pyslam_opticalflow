@@ -91,10 +91,10 @@ if __name__ == "__main__":
     matched_points_plt = Mplot2d(xlabel='img id', ylabel='# matches',title='# matches')    
 
     do_step = False   
-    is_paused = False 
+    is_paused = False
     
-    img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed 
-    while dataset.isOk():
+    img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed
+    while dataset.isOk() and img_id < 20:
             
         if not is_paused: 
             print('..................................')

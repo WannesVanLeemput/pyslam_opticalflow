@@ -148,15 +148,15 @@ def bundle_adjustment(keyframes, points, local_window, fixed_points=False, verbo
 # - is_ok: is the pose optimization successful? 
 # - num_valid_points: number of inliers detected by the optimization 
 # N.B.: access frames from tracking thread, no need to lock frame fields 
-def pose_optimization(frame, verbose=False, rounds=10):
+def pose_optimization(frame, verbose=False, rounds=2):
 
     is_ok = True 
 
     # create g2o optimizer
     opt = g2o.SparseOptimizer()
     #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverCSparseSE3())
-    #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverDenseSE3())    
-    block_solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())       
+    block_solver = g2o.BlockSolverSE3(g2o.LinearSolverCholmodSE3())
+    #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())
     solver = g2o.OptimizationAlgorithmLevenberg(block_solver)
     opt.set_algorithm(solver)
 
@@ -272,12 +272,13 @@ def pose_optimization(frame, verbose=False, rounds=10):
 # local bundle adjustment (optimize points reprojection error)
 # - frames and points are optimized
 # - frames_ref are fixed 
-def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=False, verbose=False, rounds=10, abort_flag=g2o.Flag(), map_lock=None):
+def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=False, verbose=False, rounds=2, abort_flag=g2o.Flag(), map_lock=None):
 
     # create g2o optimizer
     opt = g2o.SparseOptimizer()
-    block_solver = g2o.BlockSolverSE3(g2o.LinearSolverCSparseSE3())
-    #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())  
+    #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverCSparseSE3())
+    #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverEigenSE3())
+    block_solver = g2o.BlockSolverSE3(g2o.LinearSolverDenseSE3())
     #block_solver = g2o.BlockSolverSE3(g2o.LinearSolverCholmodSE3())          
     solver = g2o.OptimizationAlgorithmLevenberg(block_solver)
     opt.set_algorithm(solver)

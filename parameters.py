@@ -104,15 +104,15 @@ class Parameters(object):
 
 
     # Local Mapping 
-    kLocalMappingNumNeighborKeyFrames=5                   #  [# frames]   for generating new points and fusing them
+    kLocalMappingNumNeighborKeyFrames=2                   #  [# frames]   for generating new points and fusing them
 
 
     # Covisibility graph 
-    kMinNumOfCovisiblePointsForCreatingConnection=15 
+    kMinNumOfCovisiblePointsForCreatingConnection=50
     
     
     # Bundle Adjustment (BA)
-    kLocalBAWindow=20                 #  [# frames]   
+    kLocalBAWindow=5                 #  [# frames]
     kUseLargeWindowBA=True           # True: perform BA over a large window; False: do not perform large window BA
     kEveryNumFramesLargeWindowBA=10   # num of frames between two large window BA  
     kLargeBAWindow=20                 #  [# frames] 
