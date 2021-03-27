@@ -42,7 +42,7 @@ import optimizer_g2o
 
 
 kVerbose = True 
-kMaxLenFrameDeque = 20
+kMaxLenFrameDeque = 5
 
 
 if not kVerbose:
