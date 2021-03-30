@@ -42,7 +42,7 @@ import optimizer_g2o
 
 
 kVerbose = True 
-kMaxLenFrameDeque = 5
+kMaxLenFrameDeque = 8
 
 
 if not kVerbose:
@@ -388,7 +388,7 @@ class Map(object):
 
 
     # local BA: only local keyframes and local points are adjusted
-    def locally_optimize(self, kf_ref, verbose = False, rounds=10, abort_flag=g2o.Flag()):    
+    def locally_optimize(self, kf_ref, verbose = False, rounds=2, abort_flag=g2o.Flag()):
         keyframes, points, ref_keyframes = self.local_map.update(kf_ref)
         print('local optimization window: ', sorted([kf.id for kf in keyframes]))        
         print('                     refs: ', sorted([kf.id for kf in ref_keyframes]))

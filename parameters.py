@@ -24,7 +24,7 @@ List of shared parameters
 class Parameters(object):   
     
     # SLAM threads 
-    kLocalMappingOnSeparateThread=False# True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread
+    kLocalMappingOnSeparateThread=True# True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread
     kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=0.5  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
@@ -104,7 +104,7 @@ class Parameters(object):
 
 
     # Local Mapping 
-    kLocalMappingNumNeighborKeyFrames=5                   #  [# frames]   for generating new points and fusing them
+    kLocalMappingNumNeighborKeyFrames=2                   #  [# frames]   for generating new points and fusing them
 
 
     # Covisibility graph 

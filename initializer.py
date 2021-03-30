@@ -36,8 +36,8 @@ from parameters import Parameters
 
 
 kVerbose=True     
-kRansacThresholdNormalized = 0.0003  # metric threshold used for normalized image coordinates
-kRansacProb = 0.999
+kRansacThresholdNormalized = 0.0003#0.0003  # metric threshold used for normalized image coordinates
+kRansacProb = 0.6
 
 kMaxIdDistBetweenIntializingFrames = 5   # N.B.: worse performances with values smaller than 5!
 
@@ -156,7 +156,7 @@ class Initializer(object):
         #map.add_frame(f_ref)        
         #map.add_frame(f_cur)  
         
-        kf_ref = KeyFrame(f_ref)
+        kf_ref = KeyFrame(f_ref, f_ref.img)
         kf_cur = KeyFrame(f_cur, img_cur)        
         map.add_keyframe(kf_ref)        
         map.add_keyframe(kf_cur)      

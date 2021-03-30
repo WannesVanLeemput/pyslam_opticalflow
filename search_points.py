@@ -345,7 +345,7 @@ def search_all_map_by_projection(map, f_cur):
 # search for matches between unmatched keypoints (without a corresponding map point)
 # in input we have already some pose estimates for f1 and f2
 def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None, 
-                                   max_descriptor_distance=Parameters.kMaxDescriptorDistance):   # dropped * 0.5
+                                   max_descriptor_distance=Parameters.kMaxDescriptorDistance, frames_in_between=None):   # dropped * 0.5
     idxs2_out = []
     idxs1_out = []
     num_found_matches = 0
@@ -385,8 +385,10 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
     if idxs1 is None or idxs2 is None:
         timerMatch = Timer()
         timerMatch.start()
-        if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+        if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT and kf1.id == kf2.id + 1:
             idxs1, idxs2 = Frame.feature_matcher.match(kf1, kf2)
+        elif Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+            idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2, padding=True)
         else:
             idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)
         print('search_frame_for_triangulation - matching - timer: ', timerMatch.elapsed())

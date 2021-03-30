@@ -25,10 +25,10 @@ install_pip_package opencv-python
 #pip3 uninstall opencv-contrib-python  # better to clean it before installing the right version 
 install_pip_package opencv-contrib-python==3.4.2.16 
 
-install_pip_package torch 
-install_pip_package torchvision
-install_pip_package ordered-set # from https://pypi.org/project/ordered-set/
-install_pip_package tensorflow-gpu==1.14.0  # 1.14.0 works with all the modules contained in pyslam2
+#install_pip_package torch 
+#install_pip_package torchvision
+#install_pip_package ordered-set # from https://pypi.org/project/ordered-set/
+#install_pip_package tensorflow-gpu==1.14.0  # 1.14.0 works with all the modules contained in pyslam2
 
 # it may be required if you have errors with pillow
 #pip3 uninstall pillow 

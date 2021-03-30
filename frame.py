@@ -265,7 +265,7 @@ class Frame(FrameBase):
     feature_matcher = None
     descriptor_distance = None
     descriptor_distances = None  # norm for vectors     
-    is_store_imgs = False
+    is_store_imgs = True
 
     def __init__(self, img, camera, pose=None, id=None, timestamp=None, kps_data=None):
         super().__init__(camera, pose, id, timestamp)
@@ -432,38 +432,39 @@ class Frame(FrameBase):
                         num_matched_points += 1
             return num_matched_points
 
-            # reset outliers detected in last pose optimization
+    # reset outliers detected in last pose optimization
 
-    # def clean_outlier_map_points(self):
-    #    with self._lock_features:
-    #        num_matched_points = 0
-    #        for i,p in enumerate(self.points):
-    #            if p is not None:
-    #                if self.outliers[i]:
-    #                    p.remove_frame_view(self,i)
-    #                    self.points[i] = None
-    #                    self.outliers[i] = False
-    #                    p.last_frame_id_seen = self.id
-    #                else:
-    #                    if p.num_observations > 0:
-    #                        num_matched_points +=1
-    #        return num_matched_points
-
-    # hopefully this is faster
     def clean_outlier_map_points(self):
         with self._lock_features:
             num_matched_points = 0
-            indices, points = np.where(self.points is not None, enumerate(self.points))
-            for (i, p) in zip(indices, points):
-                if self.outliers[i]:
-                    p.remove_frame_view(self, i)
-                    self.points[i] = None
-                    self.outliers[i] = False
-                    p.last_frame_id_seen = self.id
-                else:
-                    if p.num_observations > 0:
-                        num_matched_points += 1
-        return num_matched_points
+            for i,p in enumerate(self.points):
+                if p is not None:
+                    if self.outliers[i]:
+                        p.remove_frame_view(self,i)
+                        self.points[i] = None
+                        self.outliers[i] = False
+                        p.last_frame_id_seen = self.id
+                    else:
+                        if p.num_observations > 0:
+                            num_matched_points +=1
+            return num_matched_points
+
+    # hopefully this is faster
+    #def clean_outlier_map_points(self):
+    #    with self._lock_features:
+    #        num_matched_points = 0
+    #        ind_points = enumerate(self.points)
+    #        points = np.array(filter(None, self.points))
+    #        for (i, p) in zip(indices, points):
+    #            if self.outliers[i]:
+    #                p.remove_frame_view(self, i)
+    #                self.points[i] = None
+    #                self.outliers[i] = False
+    #                p.last_frame_id_seen = self.id
+    #            else:
+    #                if p.num_observations > 0:
+    #                    num_matched_points += 1
+    #    return num_matched_points
 
     # reset bad map points and update visibility count          
     def clean_bad_map_points(self):

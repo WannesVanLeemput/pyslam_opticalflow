@@ -94,7 +94,7 @@ if __name__ == "__main__":
     is_paused = False
     
     img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed
-    while dataset.isOk() and img_id < 6:
+    while dataset.isOk():
             
         if not is_paused: 
             print('..................................')

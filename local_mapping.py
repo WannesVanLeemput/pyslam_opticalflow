@@ -185,7 +185,7 @@ class LocalMapping(object):
         self.timer_triangulation.start()
         total_new_pts = self.create_new_map_points()
         self.timer_triangulation.refresh()
-        print(" # new map points: %d " % (total_new_pts))   
+        print(" # new map points: %d " % (total_new_pts))
         
         if self.queue.empty():
             # fuse map points of close keyframes

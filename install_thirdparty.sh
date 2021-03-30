@@ -119,3 +119,8 @@ cd thirdparty/orbslam2_features
 . build.sh $EXTERNAL_OPTION
 cd $STARTING_DIR
 
+print_blue "=================================================================="
+print_blue "Installing flownet2-pytorch ..."
+cd thirdparty/flownet2
+. install.sh
+cd $STARTING_DIR
