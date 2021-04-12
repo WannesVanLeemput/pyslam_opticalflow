@@ -214,8 +214,8 @@ class LocalMapping(object):
                 self.thread_large_BA.start()  
                 
             # check redundant local Keyframes
-            num_culled_keyframes = self.cull_keyframes() 
-            print(" # culled keyframes: %d " % (num_culled_keyframes))                       
+            #num_culled_keyframes = self.cull_keyframes()
+            #print(" # culled keyframes: %d " % (num_culled_keyframes))
             
         duration = time.time() - time_start
         print('local mapping duration: ', duration)

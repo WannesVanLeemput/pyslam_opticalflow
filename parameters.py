@@ -58,8 +58,8 @@ class Parameters(object):
 
 
     # Initializer 
-    kInitializerDesiredMedianDepth = 20    # when initializing, the initial median depth is computed and forced to this value (for better visualization is > 1) 
-    kMinRatioBaselineDepth = 0.001
+    kInitializerDesiredMedianDepth = 10    # when initializing, the initial median depth is computed and forced to this value (for better visualization is > 1)
+    kMinRatioBaselineDepth = 0.01
     #kMinTraslation = 0.01*kInitializerDesiredMedianDepth  # not used at the present time     
     kInitializerNumMinFeatures = 100
     kInitializerNumMinTriangulatedPoints = 100

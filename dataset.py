@@ -229,7 +229,7 @@ class FlowDataset(FolderDataset):
         self.listing_flow = glob.glob(flow + '/*flo')
         self.listing_flow.sort()
         self.listing_flow = self.listing_flow[::self.skip]
-        if len(self.listing_flow) != self.maxlen - 2: # - 1 since last image does not have flow file. Why -2?
+        if len(self.listing_flow) != self.maxlen - 1:
             raise IOError('Flow files do not match images')
 
     def getFlow(self):

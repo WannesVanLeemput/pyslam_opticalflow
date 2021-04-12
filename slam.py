@@ -157,7 +157,7 @@ class Tracking(object):
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps) 
-        self.min_frames_between_kfs = 0         
+        self.min_frames_between_kfs = 2
 
         self.state = SlamState.NO_IMAGES_YET
         
