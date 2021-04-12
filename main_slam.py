@@ -192,9 +192,7 @@ if __name__ == "__main__":
             break
         
         if viewer3D is not None:
-            is_paused = not viewer3D.is_paused()         
-    print('Relative poses: ', slam.tracking.tracking_history.relative_frame_poses)
-    print('Kf references: ', slam.tracking.tracking_history.kf_references)
+            is_paused = not viewer3D.is_paused()
     slam.quit()
     
     #cv2.waitKey(0)

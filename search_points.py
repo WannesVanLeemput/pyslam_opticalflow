@@ -135,11 +135,11 @@ def search_frame_by_projection(f_ref, f_cur,
                 continue
             kp_ref = f_ref.kps[kp_ref_idx]
             mv_ref = mvs_ref[kp_ref_idx]
-            new_x = int(kp_ref[0] + mv_ref[0])
-            new_y = int(kp_ref[1] - mv_ref[1])
+            new_x = int(round(kp_ref[0] + mv_ref[0]))
+            new_y = int(round(kp_ref[1] - mv_ref[1]))
             match_idx = int(new_x + (new_y * Parameters.kWidth))
             if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
-                if __debug__:
+                if True:
                     if new_x != int(f_cur.kps[match_idx][0]):
                         print('Error in search frame: height-coordinate mismatch', new_x, '!=',
                               int(f_cur.kps[match_idx][0]))
@@ -148,7 +148,7 @@ def search_frame_by_projection(f_ref, f_cur,
                               int(f_cur.kps[match_idx][1]))
                 # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
             if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
-                idxs_ref.append(i)
+                idxs_ref.append(kp_ref_idx)
                 idxs_cur.append(match_idx)
                 num_matches += 1
         return np.array(idxs_ref), np.array(idxs_cur), num_matches

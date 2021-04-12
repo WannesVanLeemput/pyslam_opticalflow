@@ -234,7 +234,7 @@ class FlannFeatureMatcher(FeatureMatcher):
 
 
 class FlowFeatureMatcher(FeatureMatcher):
-    def __init__(self, norm_type=cv2.NORM_HAMMING, cross_check=False, ratio_test=kRatioTest,
+    def __init__(self, norm_type=cv2.NORM_L2, cross_check=False, ratio_test=kRatioTest,
                  type=FeatureMatcherTypes.FLOW):
         super().__init__(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
         self.matcher_name = 'FlowFeatureMatcher'

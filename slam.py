@@ -53,7 +53,7 @@ from utils_draw import draw_feature_matches
 from utils_geom import triangulate_points, poseRt, normalize_vector, inv_T, triangulate_normalized_points, estimate_pose_ess_mat
 
 
-kVerbose = True     
+kVerbose = True
 kTimerVerbose = False 
 kDebugDrawMatches = False
 
@@ -156,8 +156,8 @@ class Tracking(object):
         self.descriptor_distance_sigma = Parameters.kMaxDescriptorDistance 
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
-        self.max_frames_between_kfs = int(system.camera.fps)  // 2
-        self.min_frames_between_kfs = 3
+        self.max_frames_between_kfs = int(system.camera.fps)
+        self.min_frames_between_kfs = 2
 
         self.state = SlamState.NO_IMAGES_YET
         
