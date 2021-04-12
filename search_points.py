@@ -61,9 +61,9 @@ def propagate_map_point_matches(f_ref, f_cur, idxs_ref, idxs_cur,
         p_cur = f_cur.points[idx_cur]
         if p_cur is not None: # and p_cur.num_observations > 0: # if we already matched p_cur => no need to propagate anything  
             continue
-        des_distance = p_ref.min_des_distance(f_cur.des[idx_cur])
-        if des_distance > max_descriptor_distance: 
-            continue 
+        #des_distance = p_ref.min_des_distance(f_cur.des[idx_cur])
+        #if des_distance > max_descriptor_distance:
+        #    continue
         if p_ref.add_frame_view(f_cur, idx_cur): # => P is matched to the i-th matched keypoint in f_cur
             num_matched_map_pts += 1
             idx_ref_out.append(idx)
@@ -121,6 +121,7 @@ def search_frame_by_projection(f_ref, f_cur,
         idxs_ref = []
         idxs_cur = []
         num_matches = 0
+        mvs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, return_mvs=True)
         for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
             kp_ref_idx = -1
             if f_ref.id == f_ref.kf_ref.id and f_ref.kf_ref in p.keyframes():
@@ -133,14 +134,11 @@ def search_frame_by_projection(f_ref, f_cur,
             if kp_ref_idx == -1:
                 continue
             kp_ref = f_ref.kps[kp_ref_idx]
-            mv_ref = f_ref.mvs[kp_ref_idx]
+            mv_ref = mvs_ref[kp_ref_idx]
             new_x = int(kp_ref[0] + mv_ref[0])
             new_y = int(kp_ref[1] - mv_ref[1])
-            offset_y = 16 # TODO: make this dynamic
-            offset_x = 0
-            match_idx = int(new_x + (new_y - offset_y) * Parameters.kWidth)
-            if offset_x <= new_x <= Parameters.kWidth - offset_x - 1 and offset_y <= new_y <= Parameters.kHeight - offset_y - 1 and match_idx < len(
-                    f_cur.des):
+            match_idx = int(new_x + (new_y * Parameters.kWidth))
+            if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
                 if __debug__:
                     if new_x != int(f_cur.kps[match_idx][0]):
                         print('Error in search frame: height-coordinate mismatch', new_x, '!=',
@@ -385,9 +383,7 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
     if idxs1 is None or idxs2 is None:
         timerMatch = Timer()
         timerMatch.start()
-        if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT and kf1.id == kf2.id + 1:
-            idxs1, idxs2 = Frame.feature_matcher.match(kf1, kf2)
-        elif Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+        if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
             idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2, padding=True)
         else:
             idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)
@@ -403,8 +399,8 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
             continue 
         
         descriptor_dist = Frame.descriptor_distance(kf1.des[i1], kf2.des[i2])
-        if descriptor_dist > max_descriptor_distance:
-            continue     
+        #if descriptor_dist > max_descriptor_distance:
+        #    continue
         
         kp1 = kf1.kpsu[i1]
         #kp1_scale_factor = Frame.feature_manager.scale_factors[kf1.octaves[i1]]

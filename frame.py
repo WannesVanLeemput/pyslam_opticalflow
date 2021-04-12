@@ -571,13 +571,18 @@ class Frame(FrameBase):
         kps_idxs = range(len(self.kps))
         return self.draw_feature_trails(img, kps_idxs)
 
-    # match frames f1 and f2
+    def detectAndCompute(self, f_ref):
+        img_cur = self.img
+        img_ref = f_ref.img
+
 
 
 # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
 def match_frames(f1, f2, ratio_test=None):
-    if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+    if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT and f2.id + 1 == f1.id:
         idx1, idx2 = Frame.feature_matcher.match(f1, f2, ratio_test)
+    elif Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
+        idx1, idx2 = Frame.feature_matcher.match_non_neighbours(f1, f2)
     else:
         idx1, idx2 = Frame.feature_matcher.match(f1.des, f2.des, ratio_test)
     idx1 = np.asarray(idx1)

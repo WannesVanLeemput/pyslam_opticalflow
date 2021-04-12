@@ -53,9 +53,10 @@ if __name__ == "__main__":
     config = Config()
 
     dataset = dataset_factory(config.dataset_settings)
+    custum_time = False
 
     #groundtruth = groundtruth_factory(config.dataset_settings)
-    groundtruth = None # not actually used by Slam() class; could be used for evaluating performances 
+    groundtruth = None # not actually used by Slam() class; could be used for evaluating performances
 
     cam = PinholeCamera(config.cam_settings['Camera.width'], config.cam_settings['Camera.height'],
                         config.cam_settings['Camera.fx'], config.cam_settings['Camera.fy'],
@@ -73,8 +74,8 @@ if __name__ == "__main__":
     tracker_config = FeatureTrackerConfigs.DIRECT
     tracker_config['num_features'] = num_features
     tracker_config['tracker_type'] = tracker_type
-    if tracker_config == FeatureTrackerConfigs.DIRECT:
-        tracker_config['flow_files'] = dataset.getFlow()
+#    if tracker_config == FeatureTrackerConfigs.DIRECT:
+#        tracker_config['flow_files'] = dataset.getFlow()
     
     print('tracker_config: ',tracker_config)    
     feature_tracker = feature_tracker_factory(**tracker_config)
@@ -92,6 +93,7 @@ if __name__ == "__main__":
 
     do_step = False   
     is_paused = False
+    timestamp = None
     
     img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed
     while dataset.isOk():
@@ -103,11 +105,15 @@ if __name__ == "__main__":
             if img is None:
                 print('image is empty')
                 getchar()
-            if img_id == 0:
-                timestamp = 0
-                next_timestamp = 0
-            timestamp = next_timestamp #dataset.getTimestamp()          # get current timestamp
-            next_timestamp = timestamp + 0.08 #dataset.getNextTimestamp() # get next timestamp
+            if not custum_time:
+                if img_id == 0:
+                    timestamp = 0
+                    next_timestamp = 0
+                timestamp = next_timestamp #dataset.getTimestamp()          # get current timestamp
+                next_timestamp = timestamp + 0.08 #dataset.getNextTimestamp() # get next timestamp
+            else:
+                timestamp = dataset.getTimestamp()
+                next_timestamp = dataset.getNextTimestamp()
             frame_duration = next_timestamp-timestamp 
 
             if img is not None:

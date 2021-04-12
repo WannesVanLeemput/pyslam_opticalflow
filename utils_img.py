@@ -259,3 +259,11 @@ def remove_borders(image, borders):
     else:
         new_im[borders:shape[0] - borders, borders:shape[1] - borders] = image[borders:shape[0] - borders, borders:shape[1] - borders]
     return new_im
+
+
+# code fragment from https://stackoverflow.com/questions/39382412/crop-center-portion-of-a-numpy-image (altered)
+def crop_center(img,cropx,cropy):
+    y, x, depth = img.shape
+    cropy = cropy // 2
+    cropx = cropx // 2
+    return img[0+cropy:y-cropy, 0+cropx:x-cropx]

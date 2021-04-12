@@ -204,8 +204,21 @@ class FolderDataset(Dataset):
         self.maxlen = len(self.listing)
         self.i = 0        
         if self.maxlen == 0:
-          raise IOError('No images were found in folder: ', path)   
-        self._timestamp = 0.        
+          raise IOError('No images were found in folder: ', path)
+        if associations is not None:
+            associations_file = path + "/" + associations
+            f = open(associations_file, "r")
+            self.associations_data = f.readlines()
+            self._timestamp = float(self.associations_data[self.i].split(sep=" ")[0])
+        else:
+            self._timestamp = 0.
+
+    def getTimestamp(self):
+        self._timestamp = float(self.associations_data[self.i].split(sep=" ")[0])
+        return self._timestamp
+
+    def getNextTimestamp(self):
+        return float(self.associations_data[self.i + 1].split(sep=" ")[0])
             
     def getImage(self, frame_id):
         if self.i == self.maxlen:
@@ -225,12 +238,12 @@ class FlowDataset(FolderDataset):
     def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.FOLDER):
         super().__init__(path, name, fps, associations, type)
         self.flow = flow
-        print('Preprocessing Flow Directory Input')
-        self.listing_flow = glob.glob(flow + '/*flo')
-        self.listing_flow.sort()
-        self.listing_flow = self.listing_flow[::self.skip]
-        if len(self.listing_flow) != self.maxlen - 2: # - 1 since last image does not have flow file. Why -2?
-            raise IOError('Flow files do not match images')
+        #print('Preprocessing Flow Directory Input')
+        #self.listing_flow = glob.glob(flow + '/*flo')
+        #self.listing_flow.sort()
+        #self.listing_flow = self.listing_flow[::self.skip]
+        #if len(self.listing_flow) != self.maxlen - 1:
+        #    raise IOError('Flow files do not match images')
 
     def getFlow(self):
         """

@@ -20,6 +20,7 @@
 import numpy as np
 import time
 import cv2
+import g2o
 from enum import Enum
 
 from frame import Frame, match_frames
@@ -89,9 +90,9 @@ class Initializer(object):
         return poseRt(R,t.T)  # Trc  homogeneous transformation matrix with respect to 'ref' frame,  pr_= Trc * pc_        
 
     # push the first image
-    def init(self, f_cur):
+    def init(self, f_cur, pose=None):
         self.frames.append(f_cur)    
-        self.f_ref = f_cur           
+        self.f_ref = f_cur
 
     # actually initialize having two available images 
     def initialize(self, f_cur, img_cur):
@@ -129,7 +130,9 @@ class Initializer(object):
             return out, is_ok
 
         # find keypoint matches
-        idxs_cur, idxs_ref = match_frames(f_cur, f_ref, kFeatureMatchRatioTestInitializer)       
+        #idxs_cur, idxs_ref = match_frames(f_cur, f_ref, kFeatureMatchRatioTestInitializer)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref)
+
     
         print('|------------')        
         #print('deque ids: ', [f.id for f in self.frames])

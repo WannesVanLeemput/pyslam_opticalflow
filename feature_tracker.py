@@ -163,11 +163,11 @@ class DirectTracker(FeatureTracker):
                                                        scale_factor=scale_factor,
                                                        detector_type=detector_type,
                                                        descriptor_type=descriptor_type)
-        self.all_flow2d = []
-        for flow_file in flow_files:
-            flow2d = flowlib.read_flow(flow_file)
-            flow2d = np.flipud(flow2d)
-            self.all_flow2d.append(flow2d)  # switch to OpenCV coordinate system
+        #self.all_flow2d = []
+        #for flow_file in flow_files:
+        #    flow2d = flowlib.read_flow(flow_file)
+        #    flow2d = np.flipud(flow2d)
+        #    self.all_flow2d.append(flow2d)  # switch to OpenCV coordinate system
         self.matcher = feature_matcher_factory(type=FeatureMatcherTypes.FLOW)
 
         # 1st try: we define the descriptor of the keypoint as the motion vector pointing to the next pixel
@@ -176,24 +176,18 @@ class DirectTracker(FeatureTracker):
         kps = []
         des = []
         mvs = []
-        current_flow = self.all_flow2d[frame_id]
-        h = current_flow.shape[0]
-        w = current_flow.shape[1]
-        offset_h = 0
-        offset_w = 0
-        if h < frame.shape[0]:
-            offset_h = int((frame.shape[0] - h) / 2)
-        if w < frame.shape[1]:
-            offset_w = int(frame.shape[1] - w / 2)
-        Parameters.kOffsetx = offset_w
-        Parameters.kOffsety = offset_h
+        #current_flow = self.all_flow2d[frame_id]
+        #h = current_flow.shape[0]
+        #w = current_flow.shape[1]
+        h = frame.shape[0]
+        w = frame.shape[1]
         for i in range(h):
             for j in range(w):
-                kp = cv2.KeyPoint(x=j+offset_w, y=i+offset_h, _size=1)
-                d = current_flow[i, j]  # motion vector
+                kp = cv2.KeyPoint(x=j, y=i, _size=1)
+                #d = current_flow[i, j]  # motion vector
                 color = frame[i, j]
                 kps.append(kp)
-                mvs.append(d)
+                #mvs.append(d)
                 des.append(color)
         return np.array(kps), np.array(des), np.array(mvs)
 

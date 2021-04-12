@@ -161,7 +161,7 @@ def pose_optimization(frame, verbose=False, rounds=2):
     opt.set_algorithm(solver)
 
     #robust_kernel = g2o.RobustKernelHuber(np.sqrt(5.991))  # chi-square 2 DOFs
-    thHuberMono = math.sqrt(5.991);  # chi-square 2 DOFS 
+    thHuberMono = math.sqrt(5.991);  # chi-square 2 DOFS
 
     point_edge_pairs = {}
     num_point_edges = 0

@@ -25,7 +25,7 @@ class CameraPose(object):
     def __init__(self, pose=None):
         #self._pose = None  # g2o.Isometry3d 
         if pose is None: 
-            pose = g2o.Isometry3d()      
+            pose = g2o.Isometry3d()
         self.set(pose)
         self.covariance = np.identity(6)          # pose covariance
         

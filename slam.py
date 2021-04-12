@@ -55,7 +55,7 @@ from utils_geom import triangulate_points, poseRt, normalize_vector, inv_T, tria
 
 kVerbose = True     
 kTimerVerbose = False 
-kDebugDrawMatches = False 
+kDebugDrawMatches = False
 
 kLocalMappingOnSeparateThread = Parameters.kLocalMappingOnSeparateThread 
 kTrackingWaitForLocalMappingToGetIdle = Parameters.kTrackingWaitForLocalMappingToGetIdle
@@ -149,15 +149,15 @@ class Tracking(object):
                                 
         self.intializer = Initializer()
         
-        self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping  
-        #self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping       
+        #self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping
+        self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping
         
         self.dyn_config = SLAMDynamicConfig()
         self.descriptor_distance_sigma = Parameters.kMaxDescriptorDistance 
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
-        self.max_frames_between_kfs = int(system.camera.fps) 
-        self.min_frames_between_kfs = 0         
+        self.max_frames_between_kfs = int(system.camera.fps)  // 2
+        self.min_frames_between_kfs = 3
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -344,7 +344,8 @@ class Tracking(object):
         # find keypoint matches between f_cur and kf_ref   
         print('matching keypoints with ', Frame.feature_matcher.type.name)              
         self.timer_match.start()
-        idxs_cur, idxs_ref = match_frames(f_cur, f_ref) 
+        # idxs_cur, idxs_ref = match_frames(f_cur, f_ref)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref)
         self.timer_match.refresh()          
         self.num_matched_kps = idxs_cur.shape[0]    
         print("# keypoints matched: %d " % self.num_matched_kps)  
@@ -527,7 +528,8 @@ class Tracking(object):
         
         if self.state == SlamState.NO_IMAGES_YET: 
             # push first frame in the inizializer 
-            self.intializer.init(f_cur) 
+            self.intializer.init(f_cur)
+
             self.state = SlamState.NOT_INITIALIZED
             x = self.f_cur.quaternion.x()
             y = self.f_cur.quaternion.y()
@@ -558,7 +560,8 @@ class Tracking(object):
                             len(initializer_output.idxs_ref) != len(set(initializer_output.idxs_ref)):
                         print("Duplicate point matches in initializer!")
                 # add points in map 
-                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur, initializer_output.idxs_ref, img, do_check=True)
+                new_pts_count,_,_ = self.map.add_points(initializer_output.pts, None, kf_cur, kf_ref, initializer_output.idxs_cur,
+                                                        initializer_output.idxs_ref, img, do_check=True, cos_max_parallax=Parameters.kCosMaxParallaxInitializer)
                 Printer.green("map: initialized %d new points" % (new_pts_count))                 
                 # update covisibility graph connections 
                 kf_ref.update_connections()
@@ -658,15 +661,6 @@ class Tracking(object):
                 
             # update motion model state     
             self.motion_model.is_ok = self.pose_is_ok
-            x = self.f_cur.quaternion.x()
-            y = self.f_cur.quaternion.y()
-            z = self.f_cur.quaternion.z()
-            w = self.f_cur.quaternion.w()
-            translation = self.f_cur.position
-            file = open("poses.txt", 'a')
-            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
-            file.close()
-            print(self.tracking_history)
             if self.pose_is_ok:   # if tracking was successful
                 
                 # update motion model                     
@@ -707,7 +701,14 @@ class Tracking(object):
                     
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
             #self.update_history()
-            
+            x = self.f_cur.quaternion.x()
+            y = self.f_cur.quaternion.y()
+            z = self.f_cur.quaternion.z()
+            w = self.f_cur.quaternion.w()
+            translation = self.f_cur.position
+            file = open("poses.txt", 'a')
+            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            file.close()
             self.timer_main_track.refresh()
             
             duration = time.time() - time_start

@@ -24,7 +24,7 @@ from enum import Enum
 from collections import defaultdict
 from utils import Printer
 from thirdparty.flownet2.models import FlowNet2
-from thirdparty.flownet2.utils.frame_utils import read_gen
+from utils_img import crop_center
 import torch
 from skimage.util import pad
 
@@ -243,12 +243,12 @@ class FlowFeatureMatcher(FeatureMatcher):
         self.net = FlowNet2(None).cuda()
         # load the state_dict
         dict = torch.load("/home/wannes/GitHub/pyslam/thirdparty/flownet2/checkpoints/FlowNet2_checkpoint.pth.tar")
-        self.net.load_state_dict(dict["state_dict"])
+        self.net.load_state_dict(dict["state_dict"], strict=True)
         print("FlowNet 2 initialized on GPU")
 
     # This code is borrowed and slightly adapted from the run_a_pair.py script obtained from the flownet2-pytorch repo
     # https://github.com/NVIDIA/flownet2-pytorch
-    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop = True):
+    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop=False, return_mvs=False):
         im_cur = f_cur.img
         im_ref = f_ref.img
         height, width, depth = im_cur.shape
@@ -262,55 +262,63 @@ class FlowFeatureMatcher(FeatureMatcher):
             im1_padded = pad(im_ref, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), 'constant', constant_values=0)
             im2_padded = pad(im_cur, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), 'constant', constant_values=0)
             images = [im1_padded, im2_padded]
+        elif crop:
+            crop_x = width % 64
+            crop_y = height % 64
+            im1_cropped = crop_center(im_ref, crop_x, crop_y)
+            im2_cropped = crop_center(im_cur, crop_x, crop_y)
+            images = [im1_cropped, im2_cropped]
+
         else:
             images = [im_ref, im_cur]
         images = np.array(images).transpose(3, 0, 1, 2)
         im = torch.from_numpy(images.astype(np.float32)).unsqueeze(0).cuda()
 
-        # process the image pair to obtian the flow
-        result = self.net(im).squeeze()
+        # process the image pair to obtain the flow
+        #result = self.net(im).squeeze()
+        result = self.net.forward(im).squeeze()
         flow2d = result.data.cpu().numpy().transpose(1, 2, 0)
-        if crop:
-            flow2d = np.delete(flow2d, slice(0, 32), 0)
-            flow2d = np.delete(flow2d, slice(flow2d.shape[0] -33, -1), 0)
+        if padding:
+            crop_x = (flow2d.shape[1] - width)
+            crop_y = (flow2d.shape[0] - height)
+            flow2d = crop_center(flow2d, crop_x, crop_y)
+        flow2d = np.flipud(flow2d)
         mvs_ref = flow2d.reshape(-1, flow2d.shape[-1])
-        return self.match(f_cur, f_ref, mv_ref=mvs_ref)
+        if return_mvs:
+            return mvs_ref
+        else:
+            return self.match(f_cur, f_ref, mv_ref=mvs_ref)
 
     # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
     def match(self, f_cur, f_ref, ratio_test=None, mv_ref=None):
-        # assert type(f_cur) == Frame.__class__ # for debugging purposes
         idx1 = []
         idx2 = []
         if type(mv_ref) != np.ndarray:
             motion_vectors = f_ref.mvs
         else:
             motion_vectors = mv_ref
-
         keypoints_ref = f_ref.kps
-        offset_x = keypoints_ref[0][0]
-        offset_y = keypoints_ref[0][1]
         width = Parameters.kWidth
         height = Parameters.kHeight
         count = 0
         stride_h = Parameters.kStrideHorizontal
         stride_v = Parameters.kStrideVertical
-        # if f_cur.id > 5:
-        #    stride_v *= 4
-        #    stride_h *= 4
+        #if f_cur.id > 5:
+        #    stride_v *= 2
+        #    stride_h *= 2
         for mv, keypoint, idx_ref in zip(motion_vectors, keypoints_ref, range(len(keypoints_ref))):
             if keypoint[0] % stride_h == 0 and keypoint[1] % stride_v == 0:
                 new_x = int(round(keypoint[0] + mv[0]))
                 new_y = int(round(keypoint[1] - mv[1]))
-                match_idx = int(new_x + (new_y - offset_y) * width)
-                if offset_x <= new_x <= width - offset_x - 1 and offset_y <= new_y <= height - offset_y - 1 and match_idx < len(
-                        f_cur.des):
-                    if __debug__:
-                        if new_x != int(f_cur.kps[match_idx][0]):
-                            print('Error matching frames: height-coordinate mismatch', new_x, '!=',
-                                  int(f_cur.kps[match_idx][0]))
-                        if new_y != int(f_cur.kps[match_idx][1]):
-                            print('Error matching frames: width-coordinate mismatch', new_y, '!=',
-                                  int(f_cur.kps[match_idx][1]))
+                match_idx = int(new_x + (new_y * width))
+                if (0 <= new_x < width) and (0 <= new_y < height) and (match_idx < width*height):
+                    #if not __debug__:
+                    if new_x != int(f_cur.kps[match_idx][0]):
+                        print('Error matching frames: width-coordinate mismatch', new_x, '!=',
+                              int(f_cur.kps[match_idx][0]))
+                    if new_y != int(f_cur.kps[match_idx][1]):
+                        print('Error matching frames: height-coordinate mismatch', new_y, '!=',
+                              int(f_cur.kps[match_idx][1]))
                     # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
                     idx1.append(match_idx)
                     idx2.append(idx_ref)
@@ -335,4 +343,4 @@ class FlowFeatureMatcher(FeatureMatcher):
         unq_idx1 = list(np.array(unq_idx1_temp)[inds])
         if len(unq_idx1) != len(set(unq_idx1)) or len(unq_idx2) != len(set(unq_idx2)):
             Printer.red("WARNING: matched keypoint multiple times, will result in BA error later!")
-        return unq_idx1, unq_idx2
+        return np.array(unq_idx1), np.array(unq_idx2)
