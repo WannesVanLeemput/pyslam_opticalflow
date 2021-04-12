@@ -30,7 +30,7 @@ from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureI
 
 from utils import Printer, import_from
 from utils_features import unpackSiftOctaveKps, UnpackOctaveMethod, sat_num_features, kdt_nms, ssc_nms, octree_nms, grid_nms
-from utils_geom import hamming_distance, hamming_distances, l2_distance, l2_distances
+from utils_geom import hamming_distance, hamming_distances, l2_distance, l2_distances, block_matching, block_matchings
 
 from feature_manager_adaptors import BlockAdaptor, PyramidAdaptor
 from pyramid import Pyramid, PyramidType
@@ -661,7 +661,10 @@ class FeatureManager(object):
             self.descriptor_distances = hamming_distances            
         if self.norm_type == cv2.NORM_L2:
             self.descriptor_distance = l2_distance      
-            self.descriptor_distances = l2_distances         
+            self.descriptor_distances = l2_distances
+        if self.norm_type == 'block_match':
+            self.descriptor_distance = block_matching
+            self.descriptor_distances = block_matchings
             
          # get and set reference max descriptor distance      
         try: 

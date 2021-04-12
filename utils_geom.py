@@ -133,7 +133,21 @@ def l2_distance(a, b):
     return np.linalg.norm(a.ravel()-b.ravel())
 
 def l2_distances(a,b):
-    return np.linalg.norm(a-b, axis=-1, keepdims=True)    
+    return np.linalg.norm(a-b, axis=-1, keepdims=True)
+
+def block_matching(a, b):
+    if a.shape != b.shape:
+        sum_a = np.sum(a ** 2)
+        sum_b = np.sum(b ** 2)
+        return sum_a - sum_b
+    block_diff = (a - b) ** 2
+    return np.sum(block_diff).mean()
+
+def block_matchings(a, b):
+    out = []
+    for (_a, _b) in zip(a, b):
+        out.append((a-b) **2)
+    return out
 
 
 # DLT with normalized image coordinates (see [HartleyZisserman Sect. 12.2 ])
@@ -176,7 +190,7 @@ def triangulate_normalized_points(pose_1w, pose_2w, kpn_1, kpn_2):
     point_4d = point_4d_hom / point_4d_hom[3] 
     
     if __debug__:
-        if False: 
+        if False:
             point_reproj = P1w @ point_4d;
             point_reproj = point_reproj / point_reproj[2] - add_ones(kpn_1).T
             err = np.sum(point_reproj**2)

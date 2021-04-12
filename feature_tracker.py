@@ -176,19 +176,36 @@ class DirectTracker(FeatureTracker):
         kps = []
         des = []
         mvs = []
-        #current_flow = self.all_flow2d[frame_id]
-        #h = current_flow.shape[0]
-        #w = current_flow.shape[1]
         h = frame.shape[0]
         w = frame.shape[1]
         for i in range(h):
             for j in range(w):
                 kp = cv2.KeyPoint(x=j, y=i, _size=1)
+                patch = np.zeros((10,10,3))
+                if 5 <= i < h-5 and 5 <= j < w-5:
+                    patch = frame[i-5:i+5, j-5:j+5]
+                else:
+                    for k, idx_k in zip(range(i-5, i+5), range(10)):
+                        for l, idx_l in zip(range(j-5, j+5), range(10)):
+                            if 0 <= k < h and 0 <= l < w:
+                                patch[idx_k, idx_l] = frame[k, l]
+                            elif k < 0 and 0 <= l < w:
+                                patch[idx_k, idx_l] = frame[0, l]
+                            elif k >= h and 0 <= l < w:
+                                patch[idx_k, idx_l] = frame[h-1, l]
+                            elif 0 <= k < h and l < 0:
+                                patch[idx_k, idx_l] = frame[k, 0]
+                            elif 0 <= k < h and w <= l:
+                                patch[idx_k, idx_l] = frame[k, w-1]
+                            elif k < 0 and l < 0:
+                                patch[idx_k, idx_l] = frame[0, 0]
+                            else:
+                                patch[idx_k, idx_l] = frame[h-1, w-1]
+
                 #d = current_flow[i, j]  # motion vector
-                color = frame[i, j]
                 kps.append(kp)
                 #mvs.append(d)
-                des.append(color)
+                des.append(patch)
         return np.array(kps), np.array(des), np.array(mvs)
 
 
