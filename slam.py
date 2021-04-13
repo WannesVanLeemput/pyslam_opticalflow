@@ -42,6 +42,7 @@ from initializer import Initializer
 import optimizer_g2o
 
 from timer import TimerFps
+from scipy.spatial.transform import Rotation as R
 
 from slam_dynamic_config import SLAMDynamicConfig
 from motion_model import MotionModel, MotionModelDamping
@@ -203,7 +204,8 @@ class Tracking(object):
         self.cur_R = None # current rotation w.r.t. world frame  
         self.cur_t = None # current translation w.r.t. world frame 
         self.trueX, self.trueY, self.trueZ = None, None, None
-        self.groundtruth = system.groundtruth  # not actually used here; could be used for evaluating performances 
+        self.groundtruth = system.groundtruth  # not actually used here; could be used for evaluating performances
+        self.output_file = "poses_agent1_ORB.txt"
         
         if kLogKFinfoToFile:
             self.kf_info_logger = Logging.setup_file_logger('kf_info_logger', 'kf_info.log',formatter=Logging.simple_log_formatter)
@@ -522,13 +524,14 @@ class Tracking(object):
             self.intializer.init(f_cur) 
             self.state = SlamState.NOT_INITIALIZED
 
-            x = self.f_cur.quaternion.x()
-            y = self.f_cur.quaternion.y()
-            z = self.f_cur.quaternion.z()
-            w = self.f_cur.quaternion.w()
-            translation = self.f_cur.position
-            file = open("poses.txt", 'a')
-            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            pose = self.f_cur.Ow
+            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat[0]
+            y = quat[1]
+            z = quat[2]
+            w = quat[3]
+            file = open(self.output_file, 'a')
+            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
             file.close()
 
             return # EXIT (jump to second frame)
@@ -566,13 +569,14 @@ class Tracking(object):
                 self.motion_model.update_pose(kf_cur.timestamp,kf_cur.position,kf_cur.quaternion)
                 self.motion_model.is_ok = False   # after initialization you cannot use motion model for next frame pose prediction (time ids of initialized poses may not be consecutive)
 
-                x = self.f_cur.quaternion.x()
-                y = self.f_cur.quaternion.y()
-                z = self.f_cur.quaternion.z()
-                w = self.f_cur.quaternion.w()
-                translation = self.f_cur.position
-                file = open("poses.txt", 'a')
-                file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+                pose = self.f_cur.Ow
+                quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+                x = quat[0]
+                y = quat[1]
+                z = quat[2]
+                w = quat[3]
+                file = open(self.output_file, 'a')
+                file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
                 file.close()
 
                 self.intializer.reset()
@@ -688,13 +692,14 @@ class Tracking(object):
             self.update_tracking_history()    # must stay after having updated slam state (self.state)
 
             # write pose to txt file
-            x = self.f_cur.quaternion.x()
-            y = self.f_cur.quaternion.y()
-            z = self.f_cur.quaternion.z()
-            w = self.f_cur.quaternion.w()
-            translation = self.f_cur.position
-            file = open("poses.txt", 'a')
-            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            pose = self.f_cur.Ow
+            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat[0]
+            y = quat[1]
+            z = quat[2]
+            w = quat[3]
+            file = open(self.output_file, 'a')
+            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
             file.close()
                     
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
