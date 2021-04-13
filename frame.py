@@ -91,6 +91,11 @@ class FrameBase(object):
             return self._pose.isometry3d
 
     @property
+    def TUMcoords(self):
+        with self._lock_pose:
+            return self._pose.toTUMcoords
+
+    @property
     def Tcw(self):
         with self._lock_pose:
             return self._pose.Tcw

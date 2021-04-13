@@ -113,7 +113,7 @@ class Parameters(object):
     
     # Bundle Adjustment (BA)
     kLocalBAWindow=5                 #  [# frames]
-    kUseLargeWindowBA=True           # True: perform BA over a large window; False: do not perform large window BA
+    kUseLargeWindowBA=False           # True: perform BA over a large window; False: do not perform large window BA
     kEveryNumFramesLargeWindowBA=20   # num of frames between two large window BA
     kLargeBAWindow=20                 #  [# frames] 
         

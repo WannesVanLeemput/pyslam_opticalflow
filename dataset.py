@@ -65,12 +65,14 @@ def dataset_factory(settings):
     if type == 'video':
         dataset = VideoDataset(path, name, associations, DatasetType.VIDEO)   
     if type == 'folder':
+        if 'output_file' in settings:
+            output_file = settings['output_file']
         fps = 10 # a default value 
         if 'fps' in settings:
             fps = int(settings['fps'])
         if 'flow_files' in settings:
             flow = settings['flow_files']
-            dataset = FlowDataset(flow, path, name, fps, associations, DatasetType.FLOW_DATASET)
+            dataset = FlowDataset(flow, path, name, fps, associations, DatasetType.FLOW_DATASET, output_file)
         else:
             dataset = FolderDataset(path, name, fps, associations, DatasetType.FOLDER)
     if type == 'live':
@@ -235,9 +237,10 @@ class FolderDataset(Dataset):
 
 
 class FlowDataset(FolderDataset):
-    def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.FOLDER):
+    def __init__(self, flow, path, name, fps=None, associations=None, type=DatasetType.FOLDER, output_file=None):
         super().__init__(path, name, fps, associations, type)
         self.flow = flow
+        self.output_file = output_file
         #print('Preprocessing Flow Directory Input')
         #self.listing_flow = glob.glob(flow + '/*flo')
         #self.listing_flow.sort()

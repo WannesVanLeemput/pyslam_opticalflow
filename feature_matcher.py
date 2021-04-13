@@ -27,6 +27,7 @@ from thirdparty.flownet2.models import FlowNet2
 from utils_img import crop_center
 import torch
 from skimage.util import pad
+import gc
 
 kRatioTest = Parameters.kFeatureMatchRatioTest
 kVerbose = False
@@ -240,6 +241,7 @@ class FlowFeatureMatcher(FeatureMatcher):
         self.matcher_name = 'FlowFeatureMatcher'
         print("Initializing FlowNet 2")
         # initial a Net
+        torch.cuda.empty_cache()
         self.net = FlowNet2(None).cuda()
         # load the state_dict
         dict = torch.load("/home/wannes/GitHub/pyslam/thirdparty/flownet2/checkpoints/FlowNet2_checkpoint.pth.tar")
@@ -275,8 +277,7 @@ class FlowFeatureMatcher(FeatureMatcher):
         im = torch.from_numpy(images.astype(np.float32)).unsqueeze(0).cuda()
 
         # process the image pair to obtain the flow
-        #result = self.net(im).squeeze()
-        result = self.net.forward(im).squeeze()
+        result = self.net(im).squeeze()
         flow2d = result.data.cpu().numpy().transpose(1, 2, 0)
         if padding:
             crop_x = (flow2d.shape[1] - width)
@@ -284,6 +285,8 @@ class FlowFeatureMatcher(FeatureMatcher):
             flow2d = crop_center(flow2d, crop_x, crop_y)
         flow2d = np.flipud(flow2d)
         mvs_ref = flow2d.reshape(-1, flow2d.shape[-1])
+        del im
+        torch.cuda.empty_cache()
         if return_mvs:
             return mvs_ref
         else:

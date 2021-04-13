@@ -20,6 +20,7 @@
 import numpy as np
 import time
 from enum import Enum
+from scipy.spatial.transform import Rotation as R
 
 from collections import defaultdict, Counter
 from itertools import chain
@@ -27,7 +28,8 @@ from itertools import chain
 import cv2
 import g2o
 
-from parameters import Parameters  
+from camera_pose import CameraPose
+from parameters import Parameters
 
 from frame import Frame, match_frames
 from keyframe import KeyFrame
@@ -105,15 +107,17 @@ class TrackingHistory(object):
 
 # main slam class containing all the required modules 
 class Slam(object):
-    def __init__(self, camera, feature_tracker, groundtruth = None):    
+    def __init__(self, camera, feature_tracker, groundtruth = None, output_file=None):
         self.init_feature_tracker(feature_tracker)
         self.camera = camera 
         self.map = Map()
         self.local_mapping = LocalMapping(self.map)
         if kLocalMappingOnSeparateThread:
             self.local_mapping.start()
-        self.groundtruth = groundtruth  # not actually used here; could be used for evaluating performances 
+        self.groundtruth = groundtruth # not actually used here; could be used for evaluating performances
+        self.output_file = output_file
         self.tracking = Tracking(self)
+
 
         
     def quit(self):
@@ -144,6 +148,7 @@ class Tracking(object):
         self.system = system                     
         self.camera = system.camera 
         self.map = system.map
+        self.output_file = system.output_file
         
         self.local_mapping = system.local_mapping
                                 
@@ -531,14 +536,14 @@ class Tracking(object):
             self.intializer.init(f_cur)
 
             self.state = SlamState.NOT_INITIALIZED
-            x = self.f_cur.quaternion.x()
-            y = self.f_cur.quaternion.y()
-            z = self.f_cur.quaternion.z()
-            w = self.f_cur.quaternion.w()
-            translation = self.f_cur.position
-            file = open("poses.txt", 'a')
-            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
-            file.close()
+            pose = self.f_cur.Ow
+            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat[0]
+            y = quat[1]
+            z = quat[2]
+            w = quat[3]
+            file = open(self.output_file, 'a')
+            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
             return # EXIT (jump to second frame)
         
         if self.state == SlamState.NOT_INITIALIZED:
@@ -584,14 +589,14 @@ class Tracking(object):
                 if kUseDynamicDesDistanceTh: 
                     self.descriptor_distance_sigma = self.dyn_config.update_descriptor_stat(kf_ref, kf_cur, initializer_output.idxs_ref, initializer_output.idxs_cur)
 
-                x = self.f_cur.quaternion.x()
-                y = self.f_cur.quaternion.y()
-                z = self.f_cur.quaternion.z()
-                w = self.f_cur.quaternion.w()
-                translation = self.f_cur.position
-                file = open("poses.txt", 'a')
-                file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
-                file.close()
+                pose = self.f_cur.Ow
+                quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+                x = quat[0]
+                y = quat[1]
+                z = quat[2]
+                w = quat[3]
+                file = open(self.output_file, 'a')
+                file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
             return # EXIT (jump to next frame)
         
         # get previous frame in map as reference        
@@ -697,17 +702,18 @@ class Tracking(object):
             if self.f_cur.kf_ref is None:
                 self.f_cur.kf_ref = self.kf_ref  
                                     
-            self.update_tracking_history()    # must stay after having updated slam state (self.state)                                                                  
+            self.update_tracking_history()    # must stay after having updated slam state (self.state)
                     
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
             #self.update_history()
-            x = self.f_cur.quaternion.x()
-            y = self.f_cur.quaternion.y()
-            z = self.f_cur.quaternion.z()
-            w = self.f_cur.quaternion.w()
-            translation = self.f_cur.position
-            file = open("poses.txt", 'a')
-            file.write(f'{timestamp} {translation[0]} {translation[1]} {translation[2]} {x} {y} {z} {w}\n')
+            pose = self.f_cur.Ow
+            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat[0]
+            y = quat[1]
+            z = quat[2]
+            w = quat[3]
+            file = open(self.output_file, 'a')
+            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
             file.close()
             self.timer_main_track.refresh()
             
@@ -734,6 +740,17 @@ class Tracking(object):
         #local_mapping_queue_size = self.local_mapping.queue_size()        
         #print('is_local_mapping_idle: ', is_local_mapping_idle,', local_mapping_queue_size: ', local_mapping_queue_size)             
 
+    def generate_trajectory(self):
+        trajectory = []
+        st_his = self.tracking_history
+        n_his = len(st_his.relative_frame_poses)
+        for i in range(n_his):
+            if st_his.slam_states[i] == SlamState.OK:  # OK
+                cur_pose = st_his.relative_frame_poses[i]
+                cur_tra = [str(round(st_his.timestamps[i], 4))] + list(map(str, np.round(cur_pose.Ow, decimals=4))) + \
+                          list(map(str, np.round(R.from_matrix(cur_pose.Rcw).as_quat(), decimals=4)))
+                trajectory.append(cur_tra)
+        return trajectory
 
     # def update_history(self):
     #     f_cur = self.map.get_frame(-1)

@@ -144,7 +144,7 @@ def search_frame_by_projection(f_ref, f_cur,
                         print('Error in search frame: height-coordinate mismatch', new_x, '!=',
                               int(f_cur.kps[match_idx][0]))
                     if new_y != int(f_cur.kps[match_idx][1]):
-                        print('Error in search frame: width-coordinate mismatch', new_y, '!=',
+                        print('Er ror in search frame: width-coordinate mismatch', new_y, '!=',
                               int(f_cur.kps[match_idx][1]))
                 # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
             if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):

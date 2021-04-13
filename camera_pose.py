@@ -48,7 +48,7 @@ class CameraPose(object):
         
     @property    
     def isometry3d(self):  # pose as g2o.Isometry3d 
-        return self._pose 
+        return self._pose
     
     @property    
     def quaternion(self): # g2o.Quaternion(),  quaternion_cw  

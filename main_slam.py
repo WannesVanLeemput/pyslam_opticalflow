@@ -20,7 +20,7 @@
 import numpy as np
 import cv2
 import math
-import time 
+import time
 
 from config import Config
 
@@ -43,6 +43,7 @@ from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureI
 from feature_matcher import feature_matcher_factory, FeatureMatcherTypes
 
 from feature_tracker_configs import FeatureTrackerConfigs
+import dill
 
 from parameters import Parameters  
 
@@ -57,11 +58,13 @@ if __name__ == "__main__":
 
     #groundtruth = groundtruth_factory(config.dataset_settings)
     groundtruth = None # not actually used by Slam() class; could be used for evaluating performances
+    output_file = dataset.output_file
 
     cam = PinholeCamera(config.cam_settings['Camera.width'], config.cam_settings['Camera.height'],
                         config.cam_settings['Camera.fx'], config.cam_settings['Camera.fy'],
                         config.cam_settings['Camera.cx'], config.cam_settings['Camera.cy'],
                         config.DistCoef, config.cam_settings['Camera.fps'])
+
     
     num_features=2000 
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     feature_tracker = feature_tracker_factory(**tracker_config)
     
     # create SLAM object 
-    slam = Slam(cam, feature_tracker, groundtruth)
+    slam = Slam(cam, feature_tracker, groundtruth, output_file)
     time.sleep(1) # to show initial messages 
 
     viewer3D = Viewer3D()
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     is_paused = False
     timestamp = None
     
-    img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed
+    img_id = 0 #180, 340, 400   # you can start from a desired frame id if needed
     while dataset.isOk():
             
         if not is_paused: 
@@ -193,6 +196,8 @@ if __name__ == "__main__":
         
         if viewer3D is not None:
             is_paused = not viewer3D.is_paused()
+
+    #traj = slam.tracking.generate_trajectory()
     slam.quit()
     
     #cv2.waitKey(0)
