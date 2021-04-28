@@ -32,6 +32,9 @@ from threading import RLock, Thread, Condition
 from queue import Queue 
 from concurrent.futures import ThreadPoolExecutor
 
+import objgraph
+from memory_profiler import profile
+
 from parameters import Parameters  
 
 #from frame import Frame, match_frames
@@ -153,7 +156,6 @@ class LocalMapping(object):
                 self.idle_codition.notifyAll()
                              
             time.sleep(kLocalMappingSleepTime)
-        
         
     def do_local_mapping(self):
         if self.queue.empty(): 
@@ -363,18 +365,18 @@ class LocalMapping(object):
             idxs_kf_cur, idxs_kf = match_idxs[(self.kf_cur,kf)]
             
             # find keypoint matches between self.kf_cur and kf
-            # N.B.: all the matched keypoints computed by search_frame_for_triangulation() are without a corresponding map point              
+            # N.B.: all the matched keypoints computed by search_frame_for_triangulation() are without a corresponding map point
             idxs_cur, idxs, num_found_matches, _ = search_frame_for_triangulation(self.kf_cur, kf, idxs_kf_cur, idxs_kf,
                                                                                    max_descriptor_distance=self.descriptor_distance_sigma) # dropped * 0.5
                         
             if len(idxs_cur) > 0:
-                # try to triangulate the matched keypoints that do not have a corresponding map point   
+                # try to triangulate the matched keypoints that do not have a corresponding map point
                 pts3d, mask_pts3d = triangulate_normalized_points(self.kf_cur.pose, kf.pose, self.kf_cur.kpsn[idxs_cur], kf.kpsn[idxs])
                     
                 new_pts_count,_,list_added_points = self.map.add_points(pts3d, mask_pts3d, self.kf_cur, kf, idxs_cur, idxs, self.kf_cur.img, do_check=True)
                 print("# added map points: %d for KFs (%d, %d)" % (new_pts_count, self.kf_cur.id, kf.id))        
                 total_new_pts += new_pts_count 
-                self.recently_added_points.update(list_added_points)       
+                self.recently_added_points.update(list_added_points)
         return total_new_pts                
         
         

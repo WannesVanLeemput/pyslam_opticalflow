@@ -23,6 +23,8 @@ import cv2
 import g2o
 from enum import Enum
 
+from memory_profiler import profile
+
 from frame import Frame, match_frames
 from keyframe import KeyFrame
 
@@ -94,7 +96,8 @@ class Initializer(object):
         self.frames.append(f_cur)    
         self.f_ref = f_cur
 
-    # actually initialize having two available images 
+    # actually initialize having two available images
+    #@profile
     def initialize(self, f_cur, img_cur):
 
         if self.num_failures > kNumOfFailuresAfterWichNumMinTriangulatedPointsIsHalved: 

@@ -263,6 +263,7 @@ def pose_optimization(frame, verbose=False, rounds=2):
     num_valid_points = num_point_edges - num_bad_point_edges   
     
     mean_squared_error = opt.active_chi2()/max(num_valid_points,1)
+    opt = None
 
     return mean_squared_error, is_ok, num_valid_points
 

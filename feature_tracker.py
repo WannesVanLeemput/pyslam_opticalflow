@@ -21,6 +21,8 @@ import numpy as np
 import cv2
 from enum import Enum
 
+from memory_profiler import profile
+
 from feature_manager import feature_manager_factory
 from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureInfo
 from feature_matcher import feature_matcher_factory, FeatureMatcherTypes
@@ -172,6 +174,7 @@ class DirectTracker(FeatureTracker):
 
         # 1st try: we define the descriptor of the keypoint as the motion vector pointing to the next pixel
         # 2nd try: descriptor is mean color in pixel neighbourhood, mv is a separate field
+    #@profile
     def detectAndCompute(self, frame, frame_id):
         kps = []
         des = []
@@ -201,12 +204,39 @@ class DirectTracker(FeatureTracker):
                                 patch[idx_k, idx_l] = frame[0, 0]
                             else:
                                 patch[idx_k, idx_l] = frame[h-1, w-1]
-
+                descriptor = np.mean(patch, (0, 1))
                 #d = current_flow[i, j]  # motion vector
                 kps.append(kp)
                 #mvs.append(d)
-                des.append(patch)
+                des.append(descriptor)
         return np.array(kps), np.array(des), np.array(mvs)
+
+    def compute(self, frame, kp_idx):
+        patch = np.zeros((10,10,3))
+        j = frame.kps[kp_idx][0]
+        i = frame.kps[kp_idx][1]
+        h,w,_ = frame.img.shape
+        image = frame.img
+        if 5 <= i < h - 5 and 5 <= j < w - 5:
+            patch = image[i - 5:i + 5, j - 5:j + 5]
+        else:
+            for k, idx_k in zip(range(i - 5, i + 5), range(10)):
+                for l, idx_l in zip(range(j - 5, j + 5), range(10)):
+                    if 0 <= k < h and 0 <= l < w:
+                        patch[idx_k, idx_l] = image[k, l]
+                    elif k < 0 and 0 <= l < w:
+                        patch[idx_k, idx_l] = image[0, l]
+                    elif k >= h and 0 <= l < w:
+                        patch[idx_k, idx_l] = image[h - 1, l]
+                    elif 0 <= k < h and l < 0:
+                        patch[idx_k, idx_l] = image[k, 0]
+                    elif 0 <= k < h and w <= l:
+                        patch[idx_k, idx_l] = image[k, w - 1]
+                    elif k < 0 and l < 0:
+                        patch[idx_k, idx_l] = image[0, 0]
+                    else:
+                        patch[idx_k, idx_l] = image[h - 1, w - 1]
+        return patch
 
 
 # Lucas-Kanade Tracker: it uses raw pixel patches as "descriptors" and track/"match" by using Lucas Kanade pyr optic flow

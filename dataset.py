@@ -25,7 +25,10 @@ import os
 import glob
 import time 
 
-from multiprocessing import Process, Queue, Value 
+from multiprocessing import Process, Queue, Value
+
+from memory_profiler import profile
+
 from utils import Printer
 
 
@@ -37,7 +40,6 @@ class DatasetType(Enum):
     FOLDER = 5  # generic folder of pics 
     LIVE = 6
     FLOW_DATASET = 7
-
 
 def dataset_factory(settings):
     type=DatasetType.NONE

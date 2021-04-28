@@ -18,6 +18,9 @@
 """
 import numpy as np
 import cv2
+import sys
+
+from memory_profiler import profile
 
 from parameters import Parameters
 from enum import Enum
@@ -241,7 +244,6 @@ class FlowFeatureMatcher(FeatureMatcher):
         self.matcher_name = 'FlowFeatureMatcher'
         print("Initializing FlowNet 2")
         # initial a Net
-        torch.cuda.empty_cache()
         self.net = FlowNet2(None).cuda()
         # load the state_dict
         dict = torch.load("/home/wannes/GitHub/pyslam/thirdparty/flownet2/checkpoints/FlowNet2_checkpoint.pth.tar")
@@ -286,7 +288,7 @@ class FlowFeatureMatcher(FeatureMatcher):
         flow2d = np.flipud(flow2d)
         mvs_ref = flow2d.reshape(-1, flow2d.shape[-1])
         del im
-        torch.cuda.empty_cache()
+        del result
         if return_mvs:
             return mvs_ref
         else:

@@ -20,6 +20,12 @@
 import numpy as np
 import time
 from enum import Enum
+from memory_profiler import profile
+from types import ModuleType, FunctionType
+from gc import get_referents
+import sys
+
+import objgraph
 from scipy.spatial.transform import Rotation as R
 
 from collections import defaultdict, Counter
@@ -105,7 +111,7 @@ class TrackingHistory(object):
         self.slam_states = []           # list of slam states 
 
 
-# main slam class containing all the required modules 
+# main slam class containing all the required modules
 class Slam(object):
     def __init__(self, camera, feature_tracker, groundtruth = None, output_file=None):
         self.init_feature_tracker(feature_tracker)
@@ -162,7 +168,7 @@ class Tracking(object):
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 2
+        self.min_frames_between_kfs = 3
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -271,7 +277,7 @@ class Tracking(object):
         return self.pose_is_ok   
     
     
-    # track camera motion of f_cur w.r.t. f_ref 
+    # track camera motion of f_cur w.r.t. f_ref
     def track_previous_frame(self, f_ref, f_cur):            
         print('>>>> tracking previous frame ...')        
         is_search_frame_by_projection_failure = False 
@@ -505,6 +511,7 @@ class Tracking(object):
 
 
     # @ main track method @
+    #@profile
     def track(self, img, frame_id, timestamp=None):
         Printer.cyan('@tracking')
         time_start = time.time()
@@ -522,8 +529,8 @@ class Tracking(object):
 
         # build current frame 
         self.timer_frame.start()        
-        f_cur = Frame(img, self.camera, timestamp=timestamp) 
-        self.f_cur = f_cur 
+        f_cur = Frame(img, self.camera, timestamp=timestamp)
+        self.f_cur = f_cur
         print("frame: ", f_cur.id)        
         self.timer_frame.refresh()   
         
@@ -600,8 +607,12 @@ class Tracking(object):
             return # EXIT (jump to next frame)
         
         # get previous frame in map as reference        
-        f_ref   = self.map.get_frame(-1) 
-        #f_ref_2 = self.map.get_frame(-2)
+        f_ref = self.map.get_frame(-1)
+        f_ref_2 = self.map.get_frame(-2)
+        if not f_ref_2.is_keyframe:
+            f_ref_2.delete_image()
+            f_ref_2.des = None
+            self.map.remove_frame(f_ref_2)
         self.f_ref = f_ref 
         
         # add current frame f_cur to map                  
@@ -609,7 +620,7 @@ class Tracking(object):
         self.f_cur.kf_ref = self.kf_ref  
         
         # reset pose state flag 
-        self.pose_is_ok = False 
+        self.pose_is_ok = False
                             
         with self.map.update_lock:
             # check for map point replacements in previous frame f_ref (some points might have been replaced by local mapping during point fusion)
@@ -687,7 +698,7 @@ class Tracking(object):
                     
                     self.local_mapping.push_keyframe(kf_new) 
                     if not kLocalMappingOnSeparateThread:
-                        self.local_mapping.do_local_mapping()                                      
+                        self.local_mapping.do_local_mapping()
                 else: 
                     Printer.yellow('NOT KF')      
                     
@@ -776,4 +787,26 @@ class Tracking(object):
     #         self.trueY = 0 
     #         self.trueZ = 0
     #         return 1
+
+    # Custom objects know their class.
+    # Function objects seem to know way too much, including modules.
+    # Exclude modules as well.
+BLACKLIST = type, ModuleType, FunctionType
+
+def getsize(obj):
+    """sum size of object & members."""
+    if isinstance(obj, BLACKLIST):
+        raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
+    seen_ids = set()
+    size = 0
+    objects = [obj]
+    while objects:
+        need_referents = []
+        for obj in objects:
+            if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
+                seen_ids.add(id(obj))
+                size += sys.getsizeof(obj)
+                need_referents.append(obj)
+        objects = get_referents(*need_referents)
+    return size
 

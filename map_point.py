@@ -57,7 +57,7 @@ class MapPointBase(object):
         self.num_times_found = 1    # number of times the point was actually matched and not rejected as outlier by the pose optimization in Tracking.track_local_map()
         self.last_frame_id_seen =-1 # last frame id in which this point was seen    
         
-        #self.is_replaced = False    # is True when the point was replaced by another point 
+        self.is_replaced = False    # is True when the point was replaced by another point
         self.replacement = None     # replacing point  
 
     def __hash__(self):
@@ -131,16 +131,16 @@ class MapPointBase(object):
     def remove_observation(self, keyframe, idx=None):        
         assert(keyframe.is_keyframe)          
         with self._lock_features:                                
-            # remove point association      
-            #if idx is not None:
-            #    if __debug__:
-            #        assert(self == keyframe.get_point_match(idx))
-            #    keyframe.remove_point_match(idx)
-                # if __debug__:
-                    # assert(not self in keyframe.points)   # checking there are no multiple instances
+            # remove point association
+            if idx is not None:
+                if __debug__:
+                    assert(self == keyframe.get_point_match(idx))
+                keyframe.remove_point_match(idx)
+                if __debug__:
+                    assert(not self in keyframe.points)   # checking there are no multiple instances
                 # TODO: this test should not fail, fix the underlying problem
-            #else:
-            keyframe.remove_point(self)
+            else:
+                keyframe.remove_point(self)
             try:
                 del self._observations[keyframe]
                 self._num_observations = max(0, self._num_observations-1)
@@ -196,11 +196,11 @@ class MapPointBase(object):
             # remove point from frame     
             if idx is not None:
                 pass
-                #if __debug__:
-                #    assert(self == frame.get_point_match(idx))
-                #frame.remove_point_match(idx)
-                #if __debug__:
-                 #   assert(not self in frame.get_points())   # checking there are no multiple instances
+                if __debug__:
+                    assert(self == frame.get_point_match(idx))
+                frame.remove_point_match(idx)
+                if __debug__:
+                    assert(not self in frame.get_points())   # checking there are no multiple instances
             else: 
                 frame.remove_point(self)  # remove all match instances                                    
             try:
@@ -315,12 +315,12 @@ class MapPoint(MapPointBase):
                 observations = list(self._observations.items()) 
                 #frame_views = list(self._frame_views.items())
                 self._observations.clear()        
-                #self._frame_views.clear()                             
+                self._frame_views.clear()
         for kf,idx in observations:
             kf.remove_point_match(idx)         
         #for f,idx in _frame_views:
-        #    f.remove_point_match(idx)                                              
-        del self  # delete if self is the last reference 
+        #    f.remove_point_match(idx)
+        del self  # delete if self is the last reference
                 
     def set_bad(self):
         with self._lock_features:
@@ -355,12 +355,13 @@ class MapPoint(MapPointBase):
         with self._lock_features:
             with self._lock_pos:   
                 observations = list(self._observations.items()) 
-                self._observations.clear()     
+                self._observations.clear()
+                #self._observations = None
                 num_times_visible = self.num_times_visible
                 num_times_found = self.num_times_found      
                 self._is_bad = True  
                 self._num_observations = 0  
-                #self.is_replaced = True    # tell the delete() method not to remove observations and frame views   
+                self.is_replaced = True    # tell the delete() method not to remove observations and frame views
                 self.replacement = p                 
             
         # replace point observations in keyframes

@@ -198,6 +198,7 @@ def triangulate_normalized_points(pose_1w, pose_2w, kpn_1, kpn_2):
 
     #return point_4d.T
     points_3d = point_4d[:3, :].T
+    point_4d = None
     return points_3d, good_pts_mask  
 
 

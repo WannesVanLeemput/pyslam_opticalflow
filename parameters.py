@@ -32,7 +32,7 @@ class Parameters(object):
     
     
     # Number of desired keypoints per frame 
-    kNumFeatures=2000
+    kNumFeatures=0
     
 
     # Point triangulation 
@@ -72,7 +72,7 @@ class Parameters(object):
     kMinNumMatchedFeaturesSearchFrameByProjection=10  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
                                                       # WARNING: essential matrix fitting comes with some limitations (please, read the comments of the method slam.estimate_pose_ess_mat())
-    kMaxNumOfKeyframesInLocalMap = 80
+    kMaxNumOfKeyframesInLocalMap = 30
     kNumBestCovisibilityKeyFrames = 10
     
     
@@ -104,7 +104,7 @@ class Parameters(object):
 
 
     # Local Mapping 
-    kLocalMappingNumNeighborKeyFrames=10                   #  [# frames]   for generating new points and fusing them
+    kLocalMappingNumNeighborKeyFrames=15                   #  [# frames]   for generating new points and fusing them
 
 
     # Covisibility graph 
@@ -112,7 +112,7 @@ class Parameters(object):
     
     
     # Bundle Adjustment (BA)
-    kLocalBAWindow=5                 #  [# frames]
+    kLocalBAWindow=10                 #  [# frames]
     kUseLargeWindowBA=False           # True: perform BA over a large window; False: do not perform large window BA
     kEveryNumFramesLargeWindowBA=20   # num of frames between two large window BA
     kLargeBAWindow=20                 #  [# frames] 

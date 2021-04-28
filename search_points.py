@@ -123,34 +123,35 @@ def search_frame_by_projection(f_ref, f_cur,
         num_matches = 0
         mvs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, return_mvs=True)
         for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
-            kp_ref_idx = -1
-            if f_ref.id == f_ref.kf_ref.id and f_ref.kf_ref in p.keyframes():
-                kp_ref_idx = p.get_observation_idx(f_ref.kf_ref)
-            else:
-                frame_views = p.frame_views()
-                for tup in frame_views:
-                    if tup[0] == f_ref:
-                        kp_ref_idx = tup[1]
-            if kp_ref_idx == -1:
-                continue
-            kp_ref = f_ref.kps[kp_ref_idx]
-            mv_ref = mvs_ref[kp_ref_idx]
-            new_x = int(round(kp_ref[0] + mv_ref[0]))
-            new_y = int(round(kp_ref[1] - mv_ref[1]))
-            match_idx = int(new_x + (new_y * Parameters.kWidth))
-            if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
-                if True:
-                    if new_x != int(f_cur.kps[match_idx][0]):
-                        print('Error in search frame: height-coordinate mismatch', new_x, '!=',
-                              int(f_cur.kps[match_idx][0]))
-                    if new_y != int(f_cur.kps[match_idx][1]):
-                        print('Er ror in search frame: width-coordinate mismatch', new_y, '!=',
-                              int(f_cur.kps[match_idx][1]))
-                # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
-            if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
-                idxs_ref.append(kp_ref_idx)
-                idxs_cur.append(match_idx)
-                num_matches += 1
+            if p.is_replaced is False:
+                kp_ref_idx = -1
+                if f_ref.id == f_ref.kf_ref.id and f_ref.kf_ref in p.keyframes():
+                    kp_ref_idx = p.get_observation_idx(f_ref.kf_ref)
+                else:
+                    frame_views = p.frame_views()
+                    for tup in frame_views:
+                        if tup[0] == f_ref:
+                            kp_ref_idx = tup[1]
+                if kp_ref_idx == -1:
+                    continue
+                kp_ref = f_ref.kps[kp_ref_idx]
+                mv_ref = mvs_ref[kp_ref_idx]
+                new_x = int(round(kp_ref[0] + mv_ref[0]))
+                new_y = int(round(kp_ref[1] - mv_ref[1]))
+                match_idx = int(new_x + (new_y * Parameters.kWidth))
+                if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
+                    if True:
+                        if new_x != int(f_cur.kps[match_idx][0]):
+                            print('Error in search frame: height-coordinate mismatch', new_x, '!=',
+                                  int(f_cur.kps[match_idx][0]))
+                        if new_y != int(f_cur.kps[match_idx][1]):
+                            print('Er ror in search frame: width-coordinate mismatch', new_y, '!=',
+                                  int(f_cur.kps[match_idx][1]))
+                    # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
+                if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
+                    idxs_ref.append(kp_ref_idx)
+                    idxs_cur.append(match_idx)
+                    num_matches += 1
         return np.array(idxs_ref), np.array(idxs_cur), num_matches
 
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):

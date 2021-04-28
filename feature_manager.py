@@ -38,23 +38,24 @@ from pyramid import Pyramid, PyramidType
 from feature_root_sift import RootSIFTFeature2D
 from feature_shitomasi import ShiTomasiDetector
     
-# import and check 
-SuperPointFeature2D = import_from('feature_superpoint', 'SuperPointFeature2D')         
-TfeatFeature2D = import_from('feature_tfeat', 'TfeatFeature2D')     
-Orbslam2Feature2D = import_from('feature_orbslam2', 'Orbslam2Feature2D')  
-HardnetFeature2D = import_from('feature_hardnet', 'HardnetFeature2D')
-GeodescFeature2D = import_from('feature_geodesc', 'GeodescFeature2D')
-SosnetFeature2D = import_from('feature_sosnet', 'SosnetFeature2D')
+# import and check
 if False:
-    L2NetKerasFeature2D = import_from('feature_l2net_keras', 'L2NetKerasFeature2D')  # not used at present time 
-L2NetFeature2D = import_from('feature_l2net', 'L2NetFeature2D')
-LogpolarFeature2D = import_from('feature_logpolar', 'LogpolarFeature2D')
-D2NetFeature2D = import_from('feature_d2net', 'D2NetFeature2D')
-DelfFeature2D = import_from('feature_delf', 'DelfFeature2D')
-ContextDescFeature2D = import_from('feature_contextdesc', 'ContextDescFeature2D')
-LfNetFeature2D = import_from('feature_lfnet', 'LfNetFeature2D')
-R2d2Feature2D = import_from('feature_r2d2', 'R2d2Feature2D')
-KeyNetDescFeature2D = import_from('feature_keynet', 'KeyNetDescFeature2D')
+    SuperPointFeature2D = import_from('feature_superpoint', 'SuperPointFeature2D')
+    TfeatFeature2D = import_from('feature_tfeat', 'TfeatFeature2D')
+    Orbslam2Feature2D = import_from('feature_orbslam2', 'Orbslam2Feature2D')
+    HardnetFeature2D = import_from('feature_hardnet', 'HardnetFeature2D')
+    GeodescFeature2D = import_from('feature_geodesc', 'GeodescFeature2D')
+    SosnetFeature2D = import_from('feature_sosnet', 'SosnetFeature2D')
+    if False:
+        L2NetKerasFeature2D = import_from('feature_l2net_keras', 'L2NetKerasFeature2D')  # not used at present time
+    L2NetFeature2D = import_from('feature_l2net', 'L2NetFeature2D')
+    LogpolarFeature2D = import_from('feature_logpolar', 'LogpolarFeature2D')
+    D2NetFeature2D = import_from('feature_d2net', 'D2NetFeature2D')
+    DelfFeature2D = import_from('feature_delf', 'DelfFeature2D')
+    ContextDescFeature2D = import_from('feature_contextdesc', 'ContextDescFeature2D')
+    LfNetFeature2D = import_from('feature_lfnet', 'LfNetFeature2D')
+    R2d2Feature2D = import_from('feature_r2d2', 'R2d2Feature2D')
+    KeyNetDescFeature2D = import_from('feature_keynet', 'KeyNetDescFeature2D')
 
 
 kVerbose = True   
@@ -153,7 +154,7 @@ class FeatureManager(object):
         # --------------------------------------------- #
         print("using opencv ", cv2.__version__)
         # check opencv version in order to use the right modules 
-        if cv2.__version__.split('.')[0] == '3':
+        if cv2.__version__.split('.')[0] == '3' and False:
             SIFT_create  = import_from('cv2.xfeatures2d','SIFT_create') 
             SURF_create  = import_from('cv2.xfeatures2d','SURF_create')
             FREAK_create  = import_from('cv2.xfeatures2d','FREAK_create')          

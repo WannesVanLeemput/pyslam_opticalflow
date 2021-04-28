@@ -22,6 +22,8 @@ import numpy as np
 # import g2o
 
 from threading import RLock, Thread
+
+from memory_profiler import profile
 from scipy.spatial import cKDTree
 
 from feature_tracker import FeatureTrackerTypes
@@ -298,7 +300,7 @@ class Frame(FrameBase):
         if img is not None:
             # self.H, self.W = img.shape[0:2]
             if Frame.is_store_imgs:
-                self.img = img.copy()
+                self.img = img #.copy()
             else:
                 self.img = None
             if kps_data is None:
@@ -312,6 +314,7 @@ class Frame(FrameBase):
                 self.octaves = np.uint32(kps_data[:, 2])  # print('octaves: ', self.octaves)
                 self.sizes = kps_data[:, 3]
                 self.angles = kps_data[:, 4]
+                del kps_data
             else:
                 # FIXME: this must be updated according to the new serialization 
                 # self.kpsu, self.des = des, np.array(list(range(len(des)))*32, np.uint8).reshape(32, len(des)).T
@@ -579,6 +582,9 @@ class Frame(FrameBase):
     def detectAndCompute(self, f_ref):
         img_cur = self.img
         img_ref = f_ref.img
+
+    def delete_image(self):
+        self.img = None
 
 
 
