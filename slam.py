@@ -62,7 +62,7 @@ from utils_geom import triangulate_points, poseRt, normalize_vector, inv_T, tria
 
 
 kVerbose = True
-kTimerVerbose = False 
+kTimerVerbose = True
 kDebugDrawMatches = False
 
 kLocalMappingOnSeparateThread = Parameters.kLocalMappingOnSeparateThread 
@@ -86,7 +86,7 @@ kUseMotionModel = Parameters.kUseMotionModel or Parameters.kUseSearchFrameByProj
 kUseSearchFrameByProjection = Parameters.kUseSearchFrameByProjection and not Parameters.kUseEssentialMatrixFitting         
 kUseEssentialMatrixFitting = Parameters.kUseEssentialMatrixFitting      
        
-kNumMinObsForKeyFrameDefault = 3
+kNumMinObsForKeyFrameDefault = 2
 
 kOpticalFlow = True
 
@@ -160,15 +160,15 @@ class Tracking(object):
                                 
         self.intializer = Initializer()
         
-        #self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping
-        self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping
+        self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping
+        #self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping
         
         self.dyn_config = SLAMDynamicConfig()
         self.descriptor_distance_sigma = Parameters.kMaxDescriptorDistance 
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 3
+        self.min_frames_between_kfs = 2
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -550,7 +550,7 @@ class Tracking(object):
             z = quat[2]
             w = quat[3]
             file = open(self.output_file, 'a')
-            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
+            file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to second frame)
         
         if self.state == SlamState.NOT_INITIALIZED:
@@ -603,7 +603,7 @@ class Tracking(object):
                 z = quat[2]
                 w = quat[3]
                 file = open(self.output_file, 'a')
-                file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
+                file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to next frame)
         
         # get previous frame in map as reference        
@@ -724,7 +724,7 @@ class Tracking(object):
             z = quat[2]
             w = quat[3]
             file = open(self.output_file, 'a')
-            file.write(f'{timestamp} {pose[0]} {pose[2]} {pose[1]} {x} {y} {z} {w}\n')
+            file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             file.close()
             self.timer_main_track.refresh()
             

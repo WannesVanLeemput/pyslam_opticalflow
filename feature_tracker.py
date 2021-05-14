@@ -31,6 +31,7 @@ from utils import Printer, import_from
 from utils_geom import hamming_distance, hamming_distances, l2_distance, l2_distances
 from parameters import Parameters
 from thirdparty.flowlib import flowlib
+from scipy.ndimage import prewitt
 
 
 kMinNumFeatureDefault = 2000
@@ -204,7 +205,11 @@ class DirectTracker(FeatureTracker):
                                 patch[idx_k, idx_l] = frame[0, 0]
                             else:
                                 patch[idx_k, idx_l] = frame[h-1, w-1]
-                descriptor = np.mean(patch, (0, 1))
+                # descriptor = np.mean(patch, (0, 1))
+                # prewitt_filter = prewitt(patch)
+                des_pixel = np.mean(patch, (0,1))
+                #des_filter = np.mean(prewitt_filter,(0,1))
+                descriptor = np.append(des_pixel)
                 #d = current_flow[i, j]  # motion vector
                 kps.append(kp)
                 #mvs.append(d)

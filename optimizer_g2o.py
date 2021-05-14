@@ -273,7 +273,7 @@ def pose_optimization(frame, verbose=False, rounds=2):
 # local bundle adjustment (optimize points reprojection error)
 # - frames and points are optimized
 # - frames_ref are fixed 
-def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=False, verbose=False, rounds=2, abort_flag=g2o.Flag(), map_lock=None):
+def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=False, verbose=False, rounds=10, abort_flag=g2o.Flag(), map_lock=None):
 
     # create g2o optimizer
     opt = g2o.SparseOptimizer()

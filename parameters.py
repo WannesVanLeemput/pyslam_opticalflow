@@ -108,7 +108,7 @@ class Parameters(object):
 
 
     # Covisibility graph 
-    kMinNumOfCovisiblePointsForCreatingConnection=15
+    kMinNumOfCovisiblePointsForCreatingConnection=35
     
     
     # Bundle Adjustment (BA)

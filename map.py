@@ -380,7 +380,7 @@ class Map(object):
     # - local keyframes are adjusted, 
     # - other keyframes are fixed
     # - all points are adjusted  
-    def optimize(self, local_window=Parameters.kLargeBAWindow, verbose=False, rounds=10, use_robust_kernel=False, do_cull_points = False, abort_flag=g2o.Flag()):            
+    def optimize(self, local_window=Parameters.kLargeBAWindow, verbose=False, rounds=7, use_robust_kernel=False, do_cull_points = False, abort_flag=g2o.Flag()):
         err = optimizer_g2o.bundle_adjustment(self.get_keyframes(), self.get_points(), local_window = local_window, verbose = verbose, rounds = rounds, use_robust_kernel=False, abort_flag=abort_flag)        
         if do_cull_points: 
             self.remove_points_with_big_reproj_err(self.get_points())
