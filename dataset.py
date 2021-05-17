@@ -27,7 +27,6 @@ import time
 
 from multiprocessing import Process, Queue, Value
 
-from memory_profiler import profile
 
 from utils import Printer
 

@@ -20,7 +20,6 @@ import numpy as np
 import cv2
 import sys
 
-from memory_profiler import profile
 
 from parameters import Parameters
 from enum import Enum

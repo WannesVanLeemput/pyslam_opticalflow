@@ -264,6 +264,7 @@ def flow_to_image(flow):
     rad = np.sqrt(u ** 2 + v ** 2)
     maxrad = max(-1, np.max(rad))
 
+    print(f"mean flow: {np.median(rad)}")
     print("max flow: %.4f\nflow range:\nu = %.3f .. %.3f\nv = %.3f .. %.3f" % (maxrad, minu,maxu, minv, maxv))
 
     u = u/(maxrad + np.finfo(float).eps)
@@ -380,8 +381,10 @@ def warp_image(im, flow):
     n = image_height * image_width
     (iy, ix) = np.mgrid[0:image_height, 0:image_width]
     (fy, fx) = np.mgrid[0:flow_height, 0:flow_width]
-    fx += flow[:,:,0]
-    fy += flow[:,:,1]
+    #fx += flow[:,:,0]
+    np.add(fx, flow[:,:,0], out=fx, casting="unsafe")
+    np.add(fy, flow[:, :, 1], out=fy, casting="unsafe")
+    #fy += flow[:,:,1]
     mask = np.logical_or(fx <0 , fx > flow_width)
     mask = np.logical_or(mask, fy < 0)
     mask = np.logical_or(mask, fy > flow_height)

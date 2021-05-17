@@ -20,13 +20,11 @@
 import numpy as np
 import time
 from enum import Enum
-from memory_profiler import profile
 from types import ModuleType, FunctionType
 from gc import get_referents
 import sys
 
-import objgraph
-from scipy.spatial.transform import Rotation as R
+#from scipy.spatial.transform import Rotation as R
 
 from collections import defaultdict, Counter
 from itertools import chain
@@ -544,11 +542,11 @@ class Tracking(object):
 
             self.state = SlamState.NOT_INITIALIZED
             pose = self.f_cur.Ow
-            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
-            x = quat[0]
-            y = quat[1]
-            z = quat[2]
-            w = quat[3]
+            quat = self.f_cur.quaternion #R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat.x
+            y = quat.y
+            z = quat.z
+            w = quat.w
             file = open(self.output_file, 'a')
             file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to second frame)
@@ -597,11 +595,11 @@ class Tracking(object):
                     self.descriptor_distance_sigma = self.dyn_config.update_descriptor_stat(kf_ref, kf_cur, initializer_output.idxs_ref, initializer_output.idxs_cur)
 
                 pose = self.f_cur.Ow
-                quat = R.from_matrix(self.f_cur.Rwc).as_quat()
-                x = quat[0]
-                y = quat[1]
-                z = quat[2]
-                w = quat[3]
+                quat = self.f_cur.quaternion#R.from_matrix(self.f_cur.Rwc).as_quat()
+                x = quat.x
+                y = quat.y
+                z = quat.z
+                w = quat.w
                 file = open(self.output_file, 'a')
                 file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to next frame)
@@ -718,11 +716,11 @@ class Tracking(object):
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
             #self.update_history()
             pose = self.f_cur.Ow
-            quat = R.from_matrix(self.f_cur.Rwc).as_quat()
-            x = quat[0]
-            y = quat[1]
-            z = quat[2]
-            w = quat[3]
+            quat = self.f_cur.quaternion #R.from_matrix(self.f_cur.Rwc).as_quat()
+            x = quat.x
+            y = quat.y
+            z = quat.z
+            w = quat.w
             file = open(self.output_file, 'a')
             file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
             file.close()
@@ -759,7 +757,7 @@ class Tracking(object):
             if st_his.slam_states[i] == SlamState.OK:  # OK
                 cur_pose = st_his.relative_frame_poses[i]
                 cur_tra = [str(round(st_his.timestamps[i], 4))] + list(map(str, np.round(cur_pose.Ow, decimals=4))) + \
-                          list(map(str, np.round(R.from_matrix(cur_pose.Rcw).as_quat(), decimals=4)))
+                          list(map(str, np.round(self.f_cur.quaternion, decimals=4)))
                 trajectory.append(cur_tra)
         return trajectory
 

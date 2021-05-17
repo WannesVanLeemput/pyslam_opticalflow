@@ -21,12 +21,9 @@ import numpy as np
 import cv2
 import math
 import time
-import objgraph
 import random
 from collections import Mapping, Container
 from sys import getsizeof
-
-from memory_profiler import profile
 
 from config import Config
 
@@ -49,7 +46,7 @@ from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureI
 from feature_matcher import feature_matcher_factory, FeatureMatcherTypes
 
 from feature_tracker_configs import FeatureTrackerConfigs
-import dill
+#import dill
 
 from parameters import Parameters
 

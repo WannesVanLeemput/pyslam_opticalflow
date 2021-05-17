@@ -21,7 +21,6 @@ import numpy as np
 import cv2
 from enum import Enum
 
-from memory_profiler import profile
 
 from feature_manager import feature_manager_factory
 from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureInfo
@@ -209,7 +208,7 @@ class DirectTracker(FeatureTracker):
                 # prewitt_filter = prewitt(patch)
                 des_pixel = np.mean(patch, (0,1))
                 #des_filter = np.mean(prewitt_filter,(0,1))
-                descriptor = np.append(des_pixel)
+                descriptor = des_pixel
                 #d = current_flow[i, j]  # motion vector
                 kps.append(kp)
                 #mvs.append(d)
