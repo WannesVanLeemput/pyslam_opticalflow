@@ -32,9 +32,6 @@ from threading import RLock, Thread, Condition
 from queue import Queue 
 from concurrent.futures import ThreadPoolExecutor
 
-import objgraph
-from memory_profiler import profile
-
 from parameters import Parameters  
 
 #from frame import Frame, match_frames

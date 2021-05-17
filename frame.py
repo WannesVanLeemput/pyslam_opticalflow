@@ -23,7 +23,7 @@ import numpy as np
 
 from threading import RLock, Thread
 
-from memory_profiler import profile
+
 from scipy.spatial import cKDTree
 
 from feature_tracker import FeatureTrackerTypes
