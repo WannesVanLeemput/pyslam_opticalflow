@@ -26,13 +26,14 @@ from enum import Enum
 from collections import defaultdict
 from utils import Printer
 from thirdparty.flownet2.models import FlowNet2
+from thirdparty.flowlib.flowlib import write_flow
 from utils_img import crop_center
 import torch
 from skimage.util import pad
 import gc
 
 kRatioTest = Parameters.kFeatureMatchRatioTest
-kVerbose = False
+kVerbose = True
 
 
 class FeatureMatcherTypes(Enum):
@@ -243,15 +244,19 @@ class FlowFeatureMatcher(FeatureMatcher):
         self.matcher_name = 'FlowFeatureMatcher'
         print("Initializing FlowNet 2")
         # initial a Net
+        torch.cuda.empty_cache()
         self.net = FlowNet2(None).cuda()
         # load the state_dict
         dict = torch.load("/home/wannes/GitHub/pyslam/thirdparty/flownet2/checkpoints/FlowNet2_checkpoint.pth.tar")
         self.net.load_state_dict(dict["state_dict"], strict=True)
         print("FlowNet 2 initialized on GPU")
+        self.index = 0
 
     # This code is borrowed and slightly adapted from the run_a_pair.py script obtained from the flownet2-pytorch repo
     # https://github.com/NVIDIA/flownet2-pytorch
-    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop=False, return_mvs=False):
+    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop=False, return_mvs=False, cutoff = Parameters.kCutoff):
+        #index_str = str(self.index)
+        #outname = "/home/wannes/storage/agent_1/flow/" + index_str.zfill(6) + ".flo"
         im_cur = f_cur.img
         im_ref = f_ref.img
         height, width, depth = im_cur.shape
@@ -265,36 +270,50 @@ class FlowFeatureMatcher(FeatureMatcher):
             im1_padded = pad(im_ref, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), 'constant', constant_values=0)
             im2_padded = pad(im_cur, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), 'constant', constant_values=0)
             images = [im1_padded, im2_padded]
+            images_inv = [im2_padded, im1_padded]
         elif crop:
             crop_x = width % 64
             crop_y = height % 64
             im1_cropped = crop_center(im_ref, crop_x, crop_y)
             im2_cropped = crop_center(im_cur, crop_x, crop_y)
             images = [im1_cropped, im2_cropped]
+            images_inv = [im2_cropped, im1_cropped]
 
         else:
             images = [im_ref, im_cur]
+            images_inv = [im_cur, im_ref]
         images = np.array(images).transpose(3, 0, 1, 2)
+        images_inv = np.array(images_inv).transpose(3, 0, 1, 2)
         im = torch.from_numpy(images.astype(np.float32)).unsqueeze(0).cuda()
+        im_inv = torch.from_numpy(images_inv.astype(np.float32)).unsqueeze(0).cuda()
 
         # process the image pair to obtain the flow
         result = self.net(im).squeeze()
+        result_inv = self.net(im_inv).squeeze()
         flow2d = result.data.cpu().numpy().transpose(1, 2, 0)
+        flow2d_inv = result_inv.data.cpu().numpy().transpose(1, 2, 0)
         if padding:
             crop_x = (flow2d.shape[1] - width)
             crop_y = (flow2d.shape[0] - height)
             flow2d = crop_center(flow2d, crop_x, crop_y)
+            flow2d_inv = crop_center(flow2d_inv, crop_x, crop_y)
         flow2d = np.flipud(flow2d)
+        flow2d_inv = np.flipud(flow2d_inv)
         mvs_ref = flow2d.reshape(-1, flow2d.shape[-1])
+        mvs_ref_inv = flow2d_inv.reshape(-1, flow2d_inv.shape[-1])
         del im
+        del im_inv
         del result
+        del result_inv
+        self.index += 1
+
         if return_mvs:
-            return mvs_ref
+            return mvs_ref, mvs_ref_inv
         else:
-            return self.match(f_cur, f_ref, mv_ref=mvs_ref)
+            return self.match(f_cur, f_ref, mv_ref=mvs_ref, mv_ref_inv=mvs_ref_inv, cutoff=cutoff)
 
     # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
-    def match(self, f_cur, f_ref, ratio_test=None, mv_ref=None):
+    def match(self, f_cur, f_ref, ratio_test=None, mv_ref=None, mv_ref_inv=None, cutoff=0.9):
         idx1 = []
         idx2 = []
         if type(mv_ref) != np.ndarray:
@@ -315,17 +334,21 @@ class FlowFeatureMatcher(FeatureMatcher):
                 new_x = int(round(keypoint[0] + mv[0]))
                 new_y = int(round(keypoint[1] - mv[1]))
                 match_idx = int(new_x + (new_y * width))
+
                 if (0 <= new_x < width) and (0 <= new_y < height) and (match_idx < width*height):
-                    #if not __debug__:
-                    if new_x != int(f_cur.kps[match_idx][0]):
-                        print('Error matching frames: width-coordinate mismatch', new_x, '!=',
-                              int(f_cur.kps[match_idx][0]))
-                    if new_y != int(f_cur.kps[match_idx][1]):
-                        print('Error matching frames: height-coordinate mismatch', new_y, '!=',
-                              int(f_cur.kps[match_idx][1]))
-                    # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
-                    idx1.append(match_idx)
-                    idx2.append(idx_ref)
+                    inv_mv = mv_ref_inv[match_idx]
+                    reliability = np.exp(np.linalg.norm(mv + inv_mv) * -Parameters.kBeliefThreshold)
+                    if reliability > cutoff:
+                        #if not __debug__:
+                        if new_x != int(f_cur.kps[match_idx][0]):
+                            print('Error matching frames: width-coordinate mismatch', new_x, '!=',
+                                  int(f_cur.kps[match_idx][0]))
+                        if new_y != int(f_cur.kps[match_idx][1]):
+                            print('Error matching frames: height-coordinate mismatch', new_y, '!=',
+                                  int(f_cur.kps[match_idx][1]))
+                        # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
+                        idx1.append(match_idx)
+                        idx2.append(idx_ref)
             count += 1
         inds = []
         unq_idx1_temp = []

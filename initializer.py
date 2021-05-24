@@ -132,7 +132,7 @@ class Initializer(object):
 
         # find keypoint matches
         #idxs_cur, idxs_ref = match_frames(f_cur, f_ref, kFeatureMatchRatioTestInitializer)
-        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=0.9)
 
     
         print('|------------')        

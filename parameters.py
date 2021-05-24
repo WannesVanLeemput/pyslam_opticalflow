@@ -24,7 +24,7 @@ List of shared parameters
 class Parameters(object):   
     
     # SLAM threads 
-    kLocalMappingOnSeparateThread=True  # move local mapping on a separate thread, False: tracking and then local mapping in a single thread
+    kLocalMappingOnSeparateThread=True # move local mapping on a separate thread, False: tracking and then local mapping in a single thread
     kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=-1  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
@@ -69,7 +69,7 @@ class Parameters(object):
     # Tracking 
     kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
-    kMinNumMatchedFeaturesSearchFrameByProjection=10  # if the number of tracked features is below this, then the search fails
+    kMinNumMatchedFeaturesSearchFrameByProjection=35  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
                                                       # WARNING: essential matrix fitting comes with some limitations (please, read the comments of the method slam.estimate_pose_ess_mat())
     kMaxNumOfKeyframesInLocalMap = 30
@@ -77,7 +77,7 @@ class Parameters(object):
     
     
     # Keyframe generation 
-    kNumMinPointsForNewKf = 30  # minimum number of matched map points for spawning a new KeyFrame
+    kNumMinPointsForNewKf = 35 #minimum number of matched map points for spawning a new KeyFrame
     kThNewKfRefRatio = 0.9      # for determining if a new KF must be spawned
     
     
@@ -104,7 +104,7 @@ class Parameters(object):
 
 
     # Local Mapping 
-    kLocalMappingNumNeighborKeyFrames=15                   #  [# frames]   for generating new points and fusing them
+    kLocalMappingNumNeighborKeyFrames=5                #  [# frames]   for generating new points and fusing them
 
 
     # Covisibility graph 
@@ -135,6 +135,9 @@ class Parameters(object):
     kHeight = 480
 
     # optical flow stride
-    kStrideHorizontal = 4
-    kStrideVertical = 4
+    kStrideHorizontal = 2
+    kStrideVertical = 2
 
+    # belief threshold
+    kBeliefThreshold = 1
+    kCutoff = 0.8

@@ -58,7 +58,7 @@ if False:
     KeyNetDescFeature2D = import_from('feature_keynet', 'KeyNetDescFeature2D')
 
 
-kVerbose = True   
+kVerbose = False
 
 kNumFeatureDefault = Parameters.kNumFeatures
 

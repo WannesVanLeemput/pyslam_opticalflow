@@ -32,6 +32,7 @@ from parameters import Parameters
 from timer import Timer
 from rotation_histogram import RotationHistogram
 from feature_tracker import FeatureTrackerTypes
+import matplotlib.pyplot as plt
 
 
 kMinDistanceFromEpipole = Parameters.kMinDistanceFromEpipole
@@ -89,7 +90,7 @@ def propagate_map_point_matches(f_ref, f_cur, idxs_ref, idxs_cur,
 def search_frame_by_projection(f_ref, f_cur,
                                max_reproj_distance=Parameters.kMaxReprojectionDistanceFrame,
                                max_descriptor_distance=Parameters.kMaxDescriptorDistance,
-                               ratio_test=Parameters.kMatchRatioTestMap, opticalFlow = False):
+                               ratio_test=Parameters.kMatchRatioTestMap, opticalFlow = True, cutoff = Parameters.kCutoff):
     found_pts_count = 0
     idxs_ref = []
     idxs_cur = [] 
@@ -118,10 +119,12 @@ def search_frame_by_projection(f_ref, f_cur,
     kd_idxs = f_cur.kd.query_ball_point(projs, radiuses)
     # projection becomes easy: get the pixel in f_cur from motion vector (descriptor of kpt)
     if opticalFlow:
+        norms = np.array([])
         idxs_ref = []
         idxs_cur = []
         num_matches = 0
-        mvs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, return_mvs=True)
+        mvs_ref, mvs_inv = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, return_mvs=True, cutoff=cutoff)
+        #mvs_ref_inv = f_ref.feature_matcher.match_non_neighbours(f_ref, f_cur, return_mvs=True)
         for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
             if p.is_replaced is False:
                 kp_ref_idx = -1
@@ -139,8 +142,12 @@ def search_frame_by_projection(f_ref, f_cur,
                 new_x = int(round(kp_ref[0] + mv_ref[0]))
                 new_y = int(round(kp_ref[1] - mv_ref[1]))
                 match_idx = int(new_x + (new_y * Parameters.kWidth))
+
                 if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
-                    if True:
+                    mv_inv = mvs_inv[match_idx]
+                    #norms.append(np.linalg.norm(mv_ref + mv_inv))
+                    norms = np.append(norms, np.linalg.norm(mv_ref + mv_inv))
+                    if np.exp(np.linalg.norm(mv_ref + mv_inv) * -cutoff*Parameters.kBeliefThreshold) > cutoff:
                         if new_x != int(f_cur.kps[match_idx][0]):
                             print('Error in search frame: height-coordinate mismatch', new_x, '!=',
                                   int(f_cur.kps[match_idx][0]))
@@ -152,6 +159,9 @@ def search_frame_by_projection(f_ref, f_cur,
                     idxs_ref.append(kp_ref_idx)
                     idxs_cur.append(match_idx)
                     num_matches += 1
+        #plt.yscale('log')
+        #plt.plot(np.sort(norms))
+        #plt.show()
         return np.array(idxs_ref), np.array(idxs_cur), num_matches
 
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):

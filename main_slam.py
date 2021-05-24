@@ -30,6 +30,8 @@ from config import Config
 from slam import Slam, SlamState
 from camera import PinholeCamera
 from ground_truth import groundtruth_factory
+import matplotlib.pyplot as plt
+from mvs_metrics import ORBmatching
 from dataset import dataset_factory
 
 # from mplot3d import Mplot3d
@@ -134,6 +136,9 @@ if __name__ == "__main__":
     do_step = False
     is_paused = False
     timestamp = None
+    im1 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame10.png', cv2.IMREAD_COLOR)
+    im2 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame11.png', cv2.IMREAD_COLOR)
+    ORBmatching(im1, im2)
 
     img_id = 0  # 180, 340, 400   # you can start from a desired frame id if needed
     while dataset.isOk():

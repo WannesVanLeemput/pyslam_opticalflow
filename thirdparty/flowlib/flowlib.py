@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.colors as cl
 import matplotlib.pyplot as plt
 from PIL import Image
+from utils_img import crop_center
 
 
 UNKNOWN_FLOW_THRESH = 1e7
@@ -204,12 +205,18 @@ def flow_error(tu, tv, u, v):
     sv = v[:]
 
     idxUnknow = (abs(stu) > UNKNOWN_FLOW_THRESH) | (abs(stv) > UNKNOWN_FLOW_THRESH)
+    idxUnknow_est = (abs(su) > UNKNOWN_FLOW_THRESH) | (abs(sv) > UNKNOWN_FLOW_THRESH)
     stu[idxUnknow] = 0
     stv[idxUnknow] = 0
     su[idxUnknow] = 0
     sv[idxUnknow] = 0
 
-    ind2 = [(np.absolute(stu) > smallflow) | (np.absolute(stv) > smallflow)]
+    stu[idxUnknow_est] = 0
+    stv[idxUnknow_est] = 0
+    su[idxUnknow_est] = 0
+    sv[idxUnknow_est] = 0
+
+    ind2 = [((np.absolute(stu) > smallflow) | (np.absolute(stv) > smallflow))]
     index_su = su[ind2]
     index_sv = sv[ind2]
     an = 1.0 / np.sqrt(index_su ** 2 + index_sv ** 2 + 1)
@@ -278,7 +285,7 @@ def flow_to_image(flow):
     return np.uint8(img)
 
 
-def evaluate_flow_file(gt, pred):
+def evaluate_flow_file(gt, pred, crop=False):
     """
     evaluate the estimated optical flow end point error according to ground truth provided
     :param gt: ground truth file path
@@ -289,6 +296,16 @@ def evaluate_flow_file(gt, pred):
     gt_flow = read_flow(gt)        # ground truth flow
     eva_flow = read_flow(pred)     # predicted flow
     # Calculate errors
+    if crop:
+        height, width, _ = gt_flow.shape
+        crop_x = width % 64
+        crop_y = height % 64
+        gt_flow = crop_center(gt_flow, crop_x, crop_y)
+    #im2_cropped = crop_center(im_cur, crop_x, crop_y)
+    #images = [im1_cropped, im2_cropped]
+    #if len(eva_flow[0] == 448):
+    #    gt_flow = np.delete(gt_flow, slice(0, 16), 0)
+    #    gt_flow = np.delete(gt_flow, slice(448-32, 448-16), 0)
     average_pe = flow_error(gt_flow[:, :, 0], gt_flow[:, :, 1], eva_flow[:, :, 0], eva_flow[:, :, 1])
     return average_pe
 

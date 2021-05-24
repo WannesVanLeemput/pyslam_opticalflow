@@ -41,7 +41,7 @@ import g2o
 import optimizer_g2o
 
 
-kVerbose = True 
+kVerbose = False
 kMaxLenFrameDeque = 8
 
 
@@ -380,7 +380,7 @@ class Map(object):
     # - local keyframes are adjusted, 
     # - other keyframes are fixed
     # - all points are adjusted  
-    def optimize(self, local_window=Parameters.kLargeBAWindow, verbose=False, rounds=7, use_robust_kernel=False, do_cull_points = False, abort_flag=g2o.Flag()):
+    def optimize(self, local_window=Parameters.kLargeBAWindow, verbose=False, rounds=10, use_robust_kernel=False, do_cull_points = False, abort_flag=g2o.Flag()):
         err = optimizer_g2o.bundle_adjustment(self.get_keyframes(), self.get_points(), local_window = local_window, verbose = verbose, rounds = rounds, use_robust_kernel=False, abort_flag=abort_flag)        
         if do_cull_points: 
             self.remove_points_with_big_reproj_err(self.get_points())
@@ -388,7 +388,7 @@ class Map(object):
 
 
     # local BA: only local keyframes and local points are adjusted
-    def locally_optimize(self, kf_ref, verbose = False, rounds=7, abort_flag=g2o.Flag()):
+    def locally_optimize(self, kf_ref, verbose = False, rounds=10, abort_flag=g2o.Flag()):
         keyframes, points, ref_keyframes = self.local_map.update(kf_ref)
         print('local optimization window: ', sorted([kf.id for kf in keyframes]))        
         print('                     refs: ', sorted([kf.id for kf in ref_keyframes]))

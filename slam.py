@@ -67,7 +67,7 @@ kLocalMappingOnSeparateThread = Parameters.kLocalMappingOnSeparateThread
 kTrackingWaitForLocalMappingToGetIdle = Parameters.kTrackingWaitForLocalMappingToGetIdle
 kTrackingWaitForLocalMappingSleepTime = Parameters.kTrackingWaitForLocalMappingSleepTime
 
-kLogKFinfoToFile = True 
+kLogKFinfoToFile = False
 
 kUseDynamicDesDistanceTh = False
 
@@ -166,7 +166,7 @@ class Tracking(object):
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 2
+        self.min_frames_between_kfs = 2#int(system.camera.fps / 3)
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -295,16 +295,19 @@ class Tracking(object):
             self.num_matched_kps = len(idxs_cur)    
             print("# matched map points in prev frame: %d " % self.num_matched_kps)
                                     
-            # if not enough map point matches consider a larger search radius 
+            # if not enough map point matches consider a larger search radius
+            wide = False
             if self.num_matched_kps < Parameters.kMinNumMatchedFeaturesSearchFrameByProjection:
                 f_cur.remove_frame_views(idxs_cur)
                 f_cur.reset_points()   
                 idxs_ref, idxs_cur, num_found_map_pts = search_frame_by_projection(f_ref, f_cur,
                                                                                  max_reproj_distance=2*search_radius,
                                                                                  max_descriptor_distance=0.5*self.descriptor_distance_sigma,
-                                                                                 opticalFlow=self.opticalFlow)
+                                                                                 opticalFlow=self.opticalFlow,
+                                                                                 cutoff=0)
                 self.num_matched_kps = len(idxs_cur)    
-                Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)    
+                Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)
+                wide = True
                                                 
             if kDebugDrawMatches and True: 
                 img_matches = draw_feature_matches(f_ref.img, f_cur.img, 
@@ -334,6 +337,43 @@ class Tracking(object):
                  # update matched map points; discard outliers detected in last pose optimization 
                 num_matched_points = f_cur.clean_outlier_map_points()   
                 print('     # num_matched_map_points: %d' % (self.num_matched_map_points) )
+                if self.num_matched_map_points < kNumMinInliersPoseOptimizationTrackFrame and not wide:
+                    f_cur.remove_frame_views(idxs_cur)
+                    f_cur.reset_points()
+                    idxs_ref, idxs_cur, num_found_map_pts = search_frame_by_projection(f_ref, f_cur,
+                                                                                       max_reproj_distance=2 * search_radius,
+                                                                                       max_descriptor_distance=0.5 * self.descriptor_distance_sigma,
+                                                                                       opticalFlow=self.opticalFlow,
+                                                                                       cutoff=0)
+                    self.num_matched_kps = len(idxs_cur)
+                    Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)
+                    wide = True
+                    if kDebugDrawMatches and True:
+                        img_matches = draw_feature_matches(f_ref.img, f_cur.img,
+                                                           f_ref.kps[idxs_ref], f_cur.kps[idxs_cur],
+                                                           f_ref.sizes[idxs_ref], f_cur.sizes[idxs_cur],
+                                                           horizontal=False)
+                        cv2.imshow('tracking frame by projection - matches', img_matches)
+                        cv2.waitKey(1)
+
+                    if self.num_matched_kps < Parameters.kMinNumMatchedFeaturesSearchFrameByProjection:
+                        f_cur.remove_frame_views(idxs_cur)
+                        f_cur.reset_points()
+                        is_search_frame_by_projection_failure = True
+                        Printer.red('Not enough matches in search frame by projection: ', self.num_matched_kps)
+                    else:
+                        # search frame by projection was successful
+                        if kUseDynamicDesDistanceTh:
+                            self.descriptor_distance_sigma = self.dyn_config.update_descriptor_stat(f_ref, f_cur,
+                                                                                                    idxs_ref, idxs_cur)
+
+                            # store tracking info (for possible reuse)
+                        self.idxs_ref = idxs_ref
+                        self.idxs_cur = idxs_cur
+
+                        # f_cur pose optimization 1:
+                        # here, we use f_cur pose as first guess and exploit the matched map point of f_ref
+                        self.pose_optimization(f_cur, 'proj-frame-frame')
                 #print('     # matched points: %d' % (num_matched_points) )
                                       
                 if not self.pose_is_ok or self.num_matched_map_points < kNumMinInliersPoseOptimizationTrackFrame:
@@ -354,7 +394,7 @@ class Tracking(object):
         print('matching keypoints with ', Frame.feature_matcher.type.name)              
         self.timer_match.start()
         # idxs_cur, idxs_ref = match_frames(f_cur, f_ref)
-        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=0)
         self.timer_match.refresh()          
         self.num_matched_kps = idxs_cur.shape[0]    
         print("# keypoints matched: %d " % self.num_matched_kps)  
@@ -543,12 +583,12 @@ class Tracking(object):
             self.state = SlamState.NOT_INITIALIZED
             pose = self.f_cur.Ow
             quat = self.f_cur.quaternion #R.from_matrix(self.f_cur.Rwc).as_quat()
-            x = quat.x
-            y = quat.y
-            z = quat.z
-            w = quat.w
+            x = quat.x()
+            y = quat.y()
+            z = quat.z()
+            w = quat.w()
             file = open(self.output_file, 'a')
-            file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
+            file.write(f'{timestamp} {pose[0]} {pose[1]} {-pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to second frame)
         
         if self.state == SlamState.NOT_INITIALIZED:
@@ -596,12 +636,12 @@ class Tracking(object):
 
                 pose = self.f_cur.Ow
                 quat = self.f_cur.quaternion#R.from_matrix(self.f_cur.Rwc).as_quat()
-                x = quat.x
-                y = quat.y
-                z = quat.z
-                w = quat.w
+                x = quat.x()
+                y = quat.y()
+                z = quat.z()
+                w = quat.w()
                 file = open(self.output_file, 'a')
-                file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
+                file.write(f'{timestamp} {pose[0]} {pose[1]} {-pose[2]} {x} {y} {z} {w}\n')
             return # EXIT (jump to next frame)
         
         # get previous frame in map as reference        
@@ -611,8 +651,8 @@ class Tracking(object):
             f_ref_2.delete_image()
             f_ref_2.des = None
             self.map.remove_frame(f_ref_2)
-        self.f_ref = f_ref 
-        
+        self.f_ref = f_ref
+
         # add current frame f_cur to map                  
         self.map.add_frame(f_cur)          
         self.f_cur.kf_ref = self.kf_ref  
@@ -717,12 +757,12 @@ class Tracking(object):
             #self.update_history()
             pose = self.f_cur.Ow
             quat = self.f_cur.quaternion #R.from_matrix(self.f_cur.Rwc).as_quat()
-            x = quat.x
-            y = quat.y
-            z = quat.z
-            w = quat.w
+            x = quat.x()
+            y = quat.y()
+            z = quat.z()
+            w = quat.w()
             file = open(self.output_file, 'a')
-            file.write(f'{timestamp} {pose[0]} {pose[1]} {pose[2]} {x} {y} {z} {w}\n')
+            file.write(f'{timestamp} {pose[0]} {pose[1]} {-pose[2]} {x} {y} {z} {w}\n')
             file.close()
             self.timer_main_track.refresh()
             
