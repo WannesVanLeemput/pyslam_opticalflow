@@ -78,13 +78,14 @@ kNumMinInliersEssentialMat = 8
 kUseGroundTruthScale = False 
 
 kNumMinInliersPoseOptimizationTrackFrame = 10
-kNumMinInliersPoseOptimizationTrackLocalMap = 10
+kNumMinInliersPoseOptimizationTrackLocalMap = 20
 
 kUseMotionModel = Parameters.kUseMotionModel or Parameters.kUseSearchFrameByProjection
 kUseSearchFrameByProjection = Parameters.kUseSearchFrameByProjection and not Parameters.kUseEssentialMatrixFitting         
-kUseEssentialMatrixFitting = Parameters.kUseEssentialMatrixFitting      
+kUseEssentialMatrixFitting = Parameters.kUseEssentialMatrixFitting
+kUseEssentialMatrixFitting_reference = True
        
-kNumMinObsForKeyFrameDefault = 2
+kNumMinObsForKeyFrameDefault = 3
 
 kOpticalFlow = True
 
@@ -158,15 +159,15 @@ class Tracking(object):
                                 
         self.intializer = Initializer()
         
-        self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping
-        #self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping
+        #self.motion_model = MotionModel()  # motion model for current frame pose prediction without damping
+        self.motion_model = MotionModelDamping()  # motion model for current frame pose prediction with damping
         
         self.dyn_config = SLAMDynamicConfig()
         self.descriptor_distance_sigma = Parameters.kMaxDescriptorDistance 
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 2#int(system.camera.fps / 3)
+        self.min_frames_between_kfs = 0 #int(system.camera.fps / 3)
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -294,6 +295,13 @@ class Tracking(object):
             self.timer_seach_frame_proj.refresh()  
             self.num_matched_kps = len(idxs_cur)    
             print("# matched map points in prev frame: %d " % self.num_matched_kps)
+
+            if self.num_matched_kps > Parameters.kPointsForStricter and self.map.num_points() > 500 and Parameters.kBeliefThreshold < Parameters.kMaxThreshold:
+                Parameters.kBeliefThreshold *= 1.5
+                Printer.green(f"Increasing reliability threshold to: {Parameters.kBeliefThreshold}")
+            if self.num_matched_kps < Parameters.kPointsForLooser:
+                Parameters.kBeliefThreshold = 0.8
+                Printer.green(f"Decreasing reliability threshold to: {Parameters.kBeliefThreshold}")
                                     
             # if not enough map point matches consider a larger search radius
             wide = False
@@ -304,7 +312,7 @@ class Tracking(object):
                                                                                  max_reproj_distance=2*search_radius,
                                                                                  max_descriptor_distance=0.5*self.descriptor_distance_sigma,
                                                                                  opticalFlow=self.opticalFlow,
-                                                                                 cutoff=0)
+                                                                                 cutoff=0.7)
                 self.num_matched_kps = len(idxs_cur)    
                 Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)
                 wide = True
@@ -394,11 +402,11 @@ class Tracking(object):
         print('matching keypoints with ', Frame.feature_matcher.type.name)              
         self.timer_match.start()
         # idxs_cur, idxs_ref = match_frames(f_cur, f_ref)
-        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=0)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=Parameters.kCutoff)
         self.timer_match.refresh()          
         self.num_matched_kps = idxs_cur.shape[0]    
         print("# keypoints matched: %d " % self.num_matched_kps)  
-        if kUseEssentialMatrixFitting: 
+        if kUseEssentialMatrixFitting:
             # estimate camera orientation and inlier matches by fitting and essential matrix (see the limitations above)             
             idxs_ref, idxs_cur = self.estimate_pose_by_fitting_ess_mat(f_ref, f_cur, idxs_ref, idxs_cur)      
         
@@ -505,7 +513,7 @@ class Tracking(object):
         num_keyframes = self.map.num_keyframes()
         nMinObs = kNumMinObsForKeyFrameDefault
         if num_keyframes <= 2:
-            nMinObs = 2  # if just two keyframes then we can have just two observations 
+            nMinObs = 2  # if just two keyframes then we can have just two observations
         num_kf_ref_tracked_points = self.kf_ref.num_tracked_points(nMinObs)  # number of tracked points in k_ref
         num_f_cur_tracked_points = f_cur.num_matched_inlier_map_points()     # number of inliers in f_cur 
         Printer.purple('F(%d) #points: %d, KF(%d) #points: %d ' %(f_cur.id, num_f_cur_tracked_points, self.kf_ref.id, num_kf_ref_tracked_points))
@@ -653,7 +661,7 @@ class Tracking(object):
             self.map.remove_frame(f_ref_2)
         self.f_ref = f_ref
 
-        # add current frame f_cur to map                  
+        # add current frame f_cur to map
         self.map.add_frame(f_cur)          
         self.f_cur.kf_ref = self.kf_ref  
         
@@ -732,9 +740,18 @@ class Tracking(object):
                     kf_new = KeyFrame(f_cur, img)                                     
                     self.kf_last = kf_new  
                     self.kf_ref = kf_new 
-                    f_cur.kf_ref = kf_new                  
+                    f_cur.kf_ref = kf_new
+                    pose = self.f_cur.Ow
+                    quat = self.f_cur.quaternion  # R.from_matrix(self.f_cur.Rwc).as_quat()
+                    x = quat.x()
+                    y = quat.y()
+                    z = quat.z()
+                    w = quat.w()
+                    file = open(self.output_file, 'a')
+                    file.write(f'{timestamp} {pose[0]} {pose[1]} {-pose[2]} {x} {y} {z} {w}\n')
+                    file.close()
                     
-                    self.local_mapping.push_keyframe(kf_new) 
+                    self.local_mapping.push_keyframe(kf_new)
                     if not kLocalMappingOnSeparateThread:
                         self.local_mapping.do_local_mapping()
                 else: 
@@ -755,15 +772,6 @@ class Tracking(object):
                     
             Printer.green("map: %d points, %d keyframes" % (self.map.num_points(), self.map.num_keyframes()))
             #self.update_history()
-            pose = self.f_cur.Ow
-            quat = self.f_cur.quaternion #R.from_matrix(self.f_cur.Rwc).as_quat()
-            x = quat.x()
-            y = quat.y()
-            z = quat.z()
-            w = quat.w()
-            file = open(self.output_file, 'a')
-            file.write(f'{timestamp} {pose[0]} {pose[1]} {-pose[2]} {x} {y} {z} {w}\n')
-            file.close()
             self.timer_main_track.refresh()
             
             duration = time.time() - time_start

@@ -60,7 +60,7 @@ def propagate_map_point_matches(f_ref, f_cur, idxs_ref, idxs_cur,
             continue  
         idx_cur = idxs_cur[i]
         p_cur = f_cur.points[idx_cur]
-        if p_cur is not None: # and p_cur.num_observations > 0: # if we already matched p_cur => no need to propagate anything  
+        if p_cur is not None and p_cur.num_observations > 0: # if we already matched p_cur => no need to propagate anything
             continue
         #des_distance = p_ref.min_des_distance(f_cur.des[idx_cur])
         #if des_distance > max_descriptor_distance:
@@ -124,7 +124,6 @@ def search_frame_by_projection(f_ref, f_cur,
         idxs_cur = []
         num_matches = 0
         mvs_ref, mvs_inv = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, return_mvs=True, cutoff=cutoff)
-        #mvs_ref_inv = f_ref.feature_matcher.match_non_neighbours(f_ref, f_cur, return_mvs=True)
         for i, p, j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
             if p.is_replaced is False:
                 kp_ref_idx = -1
@@ -146,22 +145,22 @@ def search_frame_by_projection(f_ref, f_cur,
                 if (0 <= new_x < Parameters.kWidth) and (0 <= new_y < Parameters.kHeight) and (match_idx < Parameters.kWidth*Parameters.kHeight):
                     mv_inv = mvs_inv[match_idx]
                     #norms.append(np.linalg.norm(mv_ref + mv_inv))
-                    norms = np.append(norms, np.linalg.norm(mv_ref + mv_inv))
+                    #norms = np.append(norms, np.linalg.norm(mv_ref + mv_inv))
                     if np.exp(np.linalg.norm(mv_ref + mv_inv) * -cutoff*Parameters.kBeliefThreshold) > cutoff:
                         if new_x != int(f_cur.kps[match_idx][0]):
                             print('Error in search frame: height-coordinate mismatch', new_x, '!=',
                                   int(f_cur.kps[match_idx][0]))
                         if new_y != int(f_cur.kps[match_idx][1]):
-                            print('Er ror in search frame: width-coordinate mismatch', new_y, '!=',
+                            print('Error in search frame: width-coordinate mismatch', new_y, '!=',
                                   int(f_cur.kps[match_idx][1]))
-                    # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
-                if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
-                    idxs_ref.append(kp_ref_idx)
-                    idxs_cur.append(match_idx)
-                    num_matches += 1
-        #plt.yscale('log')
-        #plt.plot(np.sort(norms))
-        #plt.show()
+
+                        # due to rounding motion vectors (we can't use sub-pixel accuracy) only use first match to certain keypoint
+                        if 0 <= match_idx < len(f_cur.kps) and p.add_frame_view(f_cur, match_idx):
+                            idxs_ref.append(kp_ref_idx)
+                            idxs_cur.append(match_idx)
+                            num_matches += 1
+        del mvs_ref
+        del mvs_inv
         return np.array(idxs_ref), np.array(idxs_cur), num_matches
 
     for i,p,j in zip(matched_ref_idxs, matched_ref_points, range(len(matched_ref_points))):
@@ -395,7 +394,8 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
         timerMatch = Timer()
         timerMatch.start()
         if Frame.tracker.tracker_type == FeatureTrackerTypes.DIRECT:
-            idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2, padding=True)
+            distance = np.abs(kf1.id - kf2.id)
+            idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2, padding=True, belief_thresh=Parameters.kBeliefThreshold_triangulation/distance)
         else:
             idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)
         print('search_frame_for_triangulation - matching - timer: ', timerMatch.elapsed())
@@ -496,7 +496,7 @@ def search_and_fuse(points, keyframe,
     for i,p,j in zip(good_pts_idxs,good_pts,range(len(good_pts))):            
                 
         if not good_pts_visible[j] or p.is_bad:     # point not visible in frame or point is bad 
-            #print('p[%d] visible: %d, bad: %d' % (i, int(good_pts_visible[j]), int(p.is_bad))) 
+            #print('p[%d] visible: %d, bad: %d' % (i, int(good_pts_visible[j]), int(p.is_bad)))
             continue  
                   
         if p.is_in_keyframe(keyframe):    # we already matched this map point to this keyframe

@@ -254,7 +254,7 @@ class FlowFeatureMatcher(FeatureMatcher):
 
     # This code is borrowed and slightly adapted from the run_a_pair.py script obtained from the flownet2-pytorch repo
     # https://github.com/NVIDIA/flownet2-pytorch
-    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop=False, return_mvs=False, cutoff = Parameters.kCutoff):
+    def match_non_neighbours(self, f_cur, f_ref, padding=True, crop=False, return_mvs=False, cutoff = Parameters.kCutoff, belief_thresh = Parameters.kBeliefThreshold):
         #index_str = str(self.index)
         #outname = "/home/wannes/storage/agent_1/flow/" + index_str.zfill(6) + ".flo"
         im_cur = f_cur.img
@@ -310,10 +310,10 @@ class FlowFeatureMatcher(FeatureMatcher):
         if return_mvs:
             return mvs_ref, mvs_ref_inv
         else:
-            return self.match(f_cur, f_ref, mv_ref=mvs_ref, mv_ref_inv=mvs_ref_inv, cutoff=cutoff)
+            return self.match(f_cur, f_ref, mv_ref=mvs_ref, mv_ref_inv=mvs_ref_inv, cutoff=cutoff, belief_thresh=belief_thresh)
 
     # out: a vector of match index pairs [idx1[i],idx2[i]] such that the keypoint f1.kps[idx1[i]] is matched with f2.kps[idx2[i]]
-    def match(self, f_cur, f_ref, ratio_test=None, mv_ref=None, mv_ref_inv=None, cutoff=0.9):
+    def match(self, f_cur, f_ref, ratio_test=None, mv_ref=None, mv_ref_inv=None, cutoff=0.9, belief_thresh = Parameters.kBeliefThreshold):
         idx1 = []
         idx2 = []
         if type(mv_ref) != np.ndarray:
@@ -337,7 +337,7 @@ class FlowFeatureMatcher(FeatureMatcher):
 
                 if (0 <= new_x < width) and (0 <= new_y < height) and (match_idx < width*height):
                     inv_mv = mv_ref_inv[match_idx]
-                    reliability = np.exp(np.linalg.norm(mv + inv_mv) * -Parameters.kBeliefThreshold)
+                    reliability = np.exp(np.linalg.norm(mv + inv_mv) * -belief_thresh)
                     if reliability > cutoff:
                         #if not __debug__:
                         if new_x != int(f_cur.kps[match_idx][0]):

@@ -48,7 +48,7 @@ from feature_types import FeatureDetectorTypes, FeatureDescriptorTypes, FeatureI
 from feature_matcher import feature_matcher_factory, FeatureMatcherTypes
 
 from feature_tracker_configs import FeatureTrackerConfigs
-#import dill
+from mvs_metrics import load_depth
 
 from parameters import Parameters
 
@@ -91,11 +91,13 @@ if __name__ == "__main__":
     config = Config()
 
     dataset = dataset_factory(config.dataset_settings)
-    custum_time = False
+    custum_time = True
 
     # groundtruth = groundtruth_factory(config.dataset_settings)
     groundtruth = None  # not actually used by Slam() class; could be used for evaluating performances
     output_file = dataset.output_file
+    #depth = load_depth("/home/wannes/storage/agent_2/depth/GDumper_A/001.png")
+    #Parameters.kInitializerDesiredMedianDepth = np.median(depth)*100
 
     cam = PinholeCamera(config.cam_settings['Camera.width'], config.cam_settings['Camera.height'],
                         config.cam_settings['Camera.fx'], config.cam_settings['Camera.fy'],
@@ -136,9 +138,9 @@ if __name__ == "__main__":
     do_step = False
     is_paused = False
     timestamp = None
-    im1 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame10.png', cv2.IMREAD_COLOR)
-    im2 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame11.png', cv2.IMREAD_COLOR)
-    ORBmatching(im1, im2)
+    #im1 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame10.png', cv2.IMREAD_COLOR)
+    #im2 = cv2.imread('/home/wannes/storage/Optical Flow/Middlebury/Images/Hydrangea/frame11.png', cv2.IMREAD_COLOR)
+    #ORBmatching(im1, im2)
 
     img_id = 0  # 180, 340, 400   # you can start from a desired frame id if needed
     while dataset.isOk():
@@ -161,13 +163,10 @@ if __name__ == "__main__":
                 next_timestamp = dataset.getNextTimestamp()
             frame_duration = next_timestamp - timestamp
 
-            if img is not None:
+            if img is not None: #and img_id % 2 == 0:
                 time_start = time.time()
                 slam.track(img, img_id, timestamp)  # main SLAM function
-                #print("=============================================")
-                #print("Memory allocations last image:")
-                #objgraph.show_growth(limit=5)
-                #print("=============================================")
+
 
                 # 3D display (map display)
                 if viewer3D is not None:

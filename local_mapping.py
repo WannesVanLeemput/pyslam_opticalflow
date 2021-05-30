@@ -256,23 +256,35 @@ class LocalMapping(object):
         
     def cull_map_points(self):
         print('>>>> culling map points...')  
-        th_num_observations = 2      
-        min_found_ratio = 0.25  
+        th_num_observations = 2
+        min_found_ratio = 0.25
         current_kid = self.kf_cur.kid 
-        remove_set = set() 
+        remove_set = set()
+        num_not_found = 0
+        num_bad = 0
+        num_observations = 0
+        num_accepted = 0
+
         for p in self.recently_added_points:
             if p.is_bad:
                 remove_set.add(p)
+                num_bad += 1
             elif p.get_found_ratio() < min_found_ratio:
-                self.map.remove_point(p)  
-                remove_set.add(p)                  
-            elif (current_kid - p.first_kid) >= 2 and p.num_observations <= th_num_observations:             
-                self.map.remove_point(p)  
-                remove_set.add(p)        
-            elif (current_kid - p.first_kid) >= 3:  # after three keyframes we do not consider the point a recent one         
+                self.map.remove_point(p)
+                remove_set.add(p)
+                num_not_found += 1
+            elif (current_kid - p.first_kid) >= 2 and p.num_observations <= th_num_observations:
+                self.map.remove_point(p)
+                remove_set.add(p)
+                num_observations += 1
+            elif (current_kid - p.first_kid) >= 3:  # after three keyframes we do not consider the point a recent one
+                num_accepted += 1
                 remove_set.add(p)   
         self.recently_added_points = self.recently_added_points - remove_set  
-        num_culled_points = len(remove_set)                                             
+        num_culled_points = len(remove_set)
+        if num_culled_points > 0:
+            print(f'Bad: {num_bad/num_culled_points}%, found ratio too low: {num_not_found/num_culled_points}%, too few observations: {num_observations/num_culled_points}, accepted points: {num_accepted/num_culled_points}')
+            print(f'Points remaining in recently added set: {len(self.recently_added_points)}')
         return num_culled_points           
            
            
@@ -281,7 +293,7 @@ class LocalMapping(object):
         num_culled_keyframes = 0
         # check redundant keyframes in local keyframes: a keyframe is considered redundant if the 90% of the MapPoints it sees, 
         # are seen in at least other 3 keyframes (in the same or finer scale)
-        th_num_observations = 3
+        th_num_observations = 5
         for kf in self.kf_cur.get_covisible_keyframes(): 
             if kf.kid==0:
                 continue 
@@ -305,7 +317,9 @@ class LocalMapping(object):
                                     break 
                         if p_num_observations >= th_num_observations:
                             kf_num_redundant_observations += 1
-            if kf_num_redundant_observations > Parameters.kKeyframeCullingRedundantObsRatio * kf_num_points:
+            if kf_num_redundant_observations > Parameters.kKeyframeCullingRedundantObsRatio * kf_num_points and \
+               (kf_num_points > Parameters.kKeyframeCullingMinNumPoints) and \
+               (kf.timestamp - kf.parent.timestamp < Parameters.kKeyframeMaxTimeDistanceInSecForCulling):
                 print('setting keyframe ', kf.id,' bad - redundant observations: ', kf_num_redundant_observations/max(kf_num_points,1),'%')
                 kf.set_bad()
                 num_culled_keyframes += 1
@@ -320,14 +334,16 @@ class LocalMapping(object):
                 if kf is self.kf_cur or kf.is_bad:
                     continue   
                 #idxs1, idxs2 = Frame.feature_matcher.match(self.kf_cur.des, kf.des)
-                idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(self.kf_cur, kf)
+                distance = np.abs(self.kf_cur.id - kf.id)
+                idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(self.kf_cur, kf, belief_thresh=Parameters.kBeliefThreshold_triangulation/distance)
                 match_idxs[(self.kf_cur,kf)]=(idxs1,idxs2)  
         else: 
             # do parallell computation 
             def thread_match_function(kf_pair):
                 kf1,kf2 = kf_pair        
                 #idxs1, idxs2 = Frame.feature_matcher.match(kf1.des, kf2.des)
-                idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2)
+                distance = np.abs(kf1 - kf2)
+                idxs1, idxs2 = Frame.feature_matcher.match_non_neighbours(kf1, kf2, belief_thresh=Parameters.kBeliefThreshold_triangulation/distance)
                 match_idxs[(kf1, kf2)]=(idxs1,idxs2)                   
             for kf in local_keyframes:
                 if kf is self.kf_cur or kf.is_bad:
@@ -352,6 +368,7 @@ class LocalMapping(object):
                     
         for i,kf in enumerate(local_keyframes):
             if kf is self.kf_cur or kf.is_bad:
+                print(f'Keyframe {kf.id} is bad!')
                 continue 
             if i>0 and not self.queue.empty():
                 print('creating new map points *** interruption ***')
@@ -365,6 +382,8 @@ class LocalMapping(object):
             # N.B.: all the matched keypoints computed by search_frame_for_triangulation() are without a corresponding map point
             idxs_cur, idxs, num_found_matches, _ = search_frame_for_triangulation(self.kf_cur, kf, idxs_kf_cur, idxs_kf,
                                                                                    max_descriptor_distance=self.descriptor_distance_sigma) # dropped * 0.5
+            if num_found_matches == 0:
+                print(f'No matches found between KF {self.kf_cur.id} and KF {kf.id}')
                         
             if len(idxs_cur) > 0:
                 # try to triangulate the matched keypoints that do not have a corresponding map point

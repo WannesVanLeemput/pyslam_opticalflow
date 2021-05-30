@@ -40,11 +40,11 @@ kVerbose=True
 kRansacThresholdNormalized = 0.0003#0.0003  # metric threshold used for normalized image coordinates
 kRansacProb = 0.6
 
-kMaxIdDistBetweenIntializingFrames = 5   # N.B.: worse performances with values smaller than 5!
+kMaxIdDistBetweenIntializingFrames = 20   # N.B.: worse performances with values smaller than 5!
 
 kFeatureMatchRatioTestInitializer = Parameters.kFeatureMatchRatioTestInitializer
 
-kNumOfFailuresAfterWichNumMinTriangulatedPointsIsHalved = 10
+kNumOfFailuresAfterWichNumMinTriangulatedPointsIsHalved = 5
 
 kMaxLenFrameDeque = 20
 
@@ -132,7 +132,7 @@ class Initializer(object):
 
         # find keypoint matches
         #idxs_cur, idxs_ref = match_frames(f_cur, f_ref, kFeatureMatchRatioTestInitializer)
-        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=0.9)
+        idxs_cur, idxs_ref = f_ref.feature_matcher.match_non_neighbours(f_cur, f_ref, cutoff=Parameters.kInitializerCutoff)
 
     
         print('|------------')        
