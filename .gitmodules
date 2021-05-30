@@ -28,3 +28,5 @@
 [submodule "thirdparty/keynet"]
 	path = thirdparty/keynet
 	url = https://github.com/axelBarroso/Key.Net.git
+[submodule "thirdparty/flownet2"]
+	url = https://github.com/NVIDIA/flownet2-pytorch
