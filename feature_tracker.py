@@ -184,12 +184,12 @@ class DirectTracker(FeatureTracker):
         for i in range(h):
             for j in range(w):
                 kp = cv2.KeyPoint(x=j, y=i, _size=1)
-                patch = np.zeros((10,10,3))
-                if 5 <= i < h-5 and 5 <= j < w-5:
-                    patch = frame[i-5:i+5, j-5:j+5]
+                patch = np.zeros((4,4,3))
+                if 2 <= i < h-2 and 2 <= j < w-2:
+                    patch = frame[i-2:i+2, j-2:j+2]
                 else:
-                    for k, idx_k in zip(range(i-5, i+5), range(10)):
-                        for l, idx_l in zip(range(j-5, j+5), range(10)):
+                    for k, idx_k in zip(range(i-2, i+2), range(4)):
+                        for l, idx_l in zip(range(j-2, j+2), range(4)):
                             if 0 <= k < h and 0 <= l < w:
                                 patch[idx_k, idx_l] = frame[k, l]
                             elif k < 0 and 0 <= l < w:

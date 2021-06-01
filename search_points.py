@@ -146,7 +146,8 @@ def search_frame_by_projection(f_ref, f_cur,
                     mv_inv = mvs_inv[match_idx]
                     #norms.append(np.linalg.norm(mv_ref + mv_inv))
                     #norms = np.append(norms, np.linalg.norm(mv_ref + mv_inv))
-                    if np.exp(np.linalg.norm(mv_ref + mv_inv) * -cutoff*Parameters.kBeliefThreshold) > cutoff:
+                    distance = np.abs(f_cur.id - f_ref.id)
+                    if np.exp(np.linalg.norm(mv_ref + mv_inv) * -cutoff*Parameters.kBeliefThreshold/distance) > cutoff:
                         if new_x != int(f_cur.kps[match_idx][0]):
                             print('Error in search frame: height-coordinate mismatch', new_x, '!=',
                                   int(f_cur.kps[match_idx][0]))

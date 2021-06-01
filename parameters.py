@@ -24,11 +24,11 @@ List of shared parameters
 class Parameters(object):   
     
     # SLAM threads 
-    kLocalMappingOnSeparateThread=True # move local mapping on a separate thread, False: tracking and then local mapping in a single thread
+    kLocalMappingOnSeparateThread=True  # move local mapping on a separate thread, False: tracking and then local mapping in a single thread
     kTrackingWaitForLocalMappingToGetIdle=True
     kTrackingWaitForLocalMappingSleepTime=-1  # -1 for no sleep # [s]
-    kLocalMappingParallelKpsMatching=True
-    kLocalMappingParallelKpsMatchingNumWorkers=8
+    kLocalMappingParallelKpsMatching=False
+    kLocalMappingParallelKpsMatchingNumWorkers=2
     
     
     # Number of desired keypoints per frame 
@@ -36,7 +36,7 @@ class Parameters(object):
     
 
     # Point triangulation 
-    kCosMaxParallaxInitializer=0.99998   # max cos angle for triangulation (min parallax angle) in the Initializer
+    kCosMaxParallaxInitializer=0.99998 # max cos angle for triangulation (min parallax angle) in the Initializer
     kCosMaxParallax=0.9999                # max cos angle for triangulation (min parallax angle)
     
     
@@ -63,27 +63,28 @@ class Parameters(object):
     #kMinTraslation = 0.01*kInitializerDesiredMedianDepth  # not used at the present time     
     kInitializerNumMinFeatures = 100
     kInitializerNumMinTriangulatedPoints = 100
-    kFeatureMatchRatioTestInitializer = 0.6   # ratio test used by Initializer
+    kFeatureMatchRatioTestInitializer = 0.8   # ratio test used by Initializer
 
 
     # Tracking 
     kUseMotionModel = True                            # use or not the motion model for computing a first guess pose (that will be optimized by pose optimization)
     kUseSearchFrameByProjection = True                # match frames by using frame map points projection and epipolar lines; here, the current available interframe pose estimate is used for computing the fundamental mat F
-    kMinNumMatchedFeaturesSearchFrameByProjection=35  # if the number of tracked features is below this, then the search fails
+    kMinNumMatchedFeaturesSearchFrameByProjection=20  # if the number of tracked features is below this, then the search fails
     kUseEssentialMatrixFitting = False              # fit an essential matrix; orientation and keypoint match inliers are estimated by fitting an essential mat (5 points algorithm),
                                                       # WARNING: essential matrix fitting comes with some limitations (please, read the comments of the method slam.estimate_pose_ess_mat())
-    kMaxNumOfKeyframesInLocalMap = 30
+    kMaxNumOfKeyframesInLocalMap = 10
     kNumBestCovisibilityKeyFrames = 10
     
     
     # Keyframe generation 
-    kNumMinPointsForNewKf = 35 #minimum number of matched map points for spawning a new KeyFrame
-    kThNewKfRefRatio = 0.9      # for determining if a new KF must be spawned
+    kNumMinPointsForNewKf = 30  #minimum number of matched map points for spawning a new KeyFrame
+    kThNewKfRefRatio = 0.9     # for determining if a new KF must be spawned
     
     
     # Keyframe culling
-    kKeyframeCullingRedundantObsRatio = 0.9     
-
+    kKeyframeCullingRedundantObsRatio = 0.9
+    kKeyframeMaxTimeDistanceInSecForCulling = 0.5  # [s]  # Use float('inf') for disabling it
+    kKeyframeCullingMinNumPoints = 50
 
     # Search matches by projection 
     kMaxReprojectionDistanceFrame=7   #7   # [pixels]    o:7
@@ -104,11 +105,11 @@ class Parameters(object):
 
 
     # Local Mapping 
-    kLocalMappingNumNeighborKeyFrames=5                #  [# frames]   for generating new points and fusing them
+    kLocalMappingNumNeighborKeyFrames=3              #  [# frames]   for generating new points and fusing them
 
 
     # Covisibility graph 
-    kMinNumOfCovisiblePointsForCreatingConnection=35
+    kMinNumOfCovisiblePointsForCreatingConnection=15
     
     
     # Bundle Adjustment (BA)
@@ -140,4 +141,9 @@ class Parameters(object):
 
     # belief threshold
     kBeliefThreshold = 1
-    kCutoff = 0.8
+    kBeliefThreshold_triangulation = 1
+    kMaxThreshold = 20
+    kCutoff = 0.9
+    kInitializerCutoff = 0.9
+    kPointsForStricter = 1000
+    kPointsForLooser = 150

@@ -1,6 +1,8 @@
 .*.swp
 .*.swo
-*.pyo 
+*.pyo
+*.png
+poses*
 __pycache__
 tmp
 build

@@ -16,6 +16,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PYSLAM. If not, see <http://www.gnu.org/licenses/>.
 """
+import csv
 
 import numpy as np
 import time
@@ -167,7 +168,7 @@ class Tracking(object):
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 0 #int(system.camera.fps / 3)
+        self.min_frames_between_kfs = 2 #int(system.camera.fps / 3)
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -298,10 +299,10 @@ class Tracking(object):
 
             if self.num_matched_kps > Parameters.kPointsForStricter and self.map.num_points() > 500 and Parameters.kBeliefThreshold < Parameters.kMaxThreshold:
                 Parameters.kBeliefThreshold *= 1.5
-                Printer.green(f"Increasing reliability threshold to: {Parameters.kBeliefThreshold}")
+                Printer.green(f"Increasing reliability parameter 'a' to: {Parameters.kBeliefThreshold}")
             if self.num_matched_kps < Parameters.kPointsForLooser:
                 Parameters.kBeliefThreshold = 0.8
-                Printer.green(f"Decreasing reliability threshold to: {Parameters.kBeliefThreshold}")
+                Printer.green(f"Increasing reliability parameter 'a' to: {Parameters.kBeliefThreshold}")
                                     
             # if not enough map point matches consider a larger search radius
             wide = False
@@ -312,7 +313,7 @@ class Tracking(object):
                                                                                  max_reproj_distance=2*search_radius,
                                                                                  max_descriptor_distance=0.5*self.descriptor_distance_sigma,
                                                                                  opticalFlow=self.opticalFlow,
-                                                                                 cutoff=0.7)
+                                                                                 cutoff=0.8)
                 self.num_matched_kps = len(idxs_cur)    
                 Printer.orange("# matched map points in prev frame (wider search): %d " % self.num_matched_kps)
                 wide = True
@@ -707,7 +708,12 @@ class Tracking(object):
                 
         # end block {with self.map.update_lock:}
         
-        # TODO: add relocalization 
+        # TODO: add relocalization
+        duration = time.time() - time_start
+        with open('tracking.csv', 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=' ',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow([duration, self.map.num_points()])
 
         # HACK: since local mapping is not fast enough in python (and tracking is not in real-time) => give local mapping more time to process stuff  
         self.wait_for_local_mapping()  # N.B.: this must be outside the `with self.map.update_lock:` block

@@ -17,8 +17,9 @@
 * along with PYSLAM. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import print_function # This must be the first statement before other statements 
+from __future__ import print_function # This must be the first statement before other statements
 
+import csv
 import sys
 import time
 import numpy as np
@@ -91,7 +92,8 @@ class LocalMapping(object):
         self.timer_pts_culling = TimerFps('Culling points', is_verbose = self.timer_verbose)              
         self.timer_pts_fusion = TimerFps('Fusing points', is_verbose = self.timer_verbose)          
         self.time_local_opt = TimerFps('Local optimization', is_verbose = self.timer_verbose)        
-        self.time_large_opt = TimerFps('Large window optimization', is_verbose = self.timer_verbose)    
+        self.time_large_opt = TimerFps('Large window optimization', is_verbose = self.timer_verbose)
+        self.time_cull_kf = TimerFps('Keyframe culling', is_verbose=self.timer_verbose)
         
         self.queue = Queue()
         self.work_thread = Thread(target=self.run)
@@ -184,6 +186,10 @@ class LocalMapping(object):
         self.timer_triangulation.start()
         total_new_pts = self.create_new_map_points()
         self.timer_triangulation.refresh()
+        with open('triangulation.csv', 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=' ',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow([self.timer_triangulation.elapsed(), self.map.num_points()])
         print(" # new map points: %d " % (total_new_pts))
         
         if self.queue.empty():
@@ -213,11 +219,21 @@ class LocalMapping(object):
                 self.thread_large_BA.start()  
                 
             # check redundant local Keyframes
+            self.time_cull_kf.start()
             num_culled_keyframes = self.cull_keyframes()
+            self.time_cull_kf.refresh()
+            with open('kf_culling.csv', 'a', newline='') as csvfile:
+                writer = csv.writer(csvfile, delimiter=' ',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow([self.time_cull_kf.elapsed(), self.map.num_points()])
             print(" # culled keyframes: %d " % (num_culled_keyframes))
             
         duration = time.time() - time_start
         print('local mapping duration: ', duration)
+        with open('local_mapping.csv', 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=' ',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow([duration, self.map.num_points()])
          
          
     def local_BA(self):

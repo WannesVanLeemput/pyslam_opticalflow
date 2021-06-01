@@ -91,7 +91,7 @@ if __name__ == "__main__":
     config = Config()
 
     dataset = dataset_factory(config.dataset_settings)
-    custum_time = True
+    custom_time = False
 
     # groundtruth = groundtruth_factory(config.dataset_settings)
     groundtruth = None  # not actually used by Slam() class; could be used for evaluating performances
@@ -152,7 +152,7 @@ if __name__ == "__main__":
             if img is None:
                 print('image is empty')
                 getchar()
-            if not custum_time:
+            if not custom_time:
                 if img_id == 0:
                     timestamp = 0
                     next_timestamp = 0
