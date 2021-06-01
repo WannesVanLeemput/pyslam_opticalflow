@@ -64,8 +64,8 @@ class Map(object):
         self.max_keyframe_id = 0  # 0 is the first keyframe id
 
         # local map 
-        #self.local_map = LocalWindowMap(map=self)
-        self.local_map = LocalCovisibilityMap(map=self)
+        self.local_map = LocalWindowMap(map=self)
+        #self.local_map = LocalCovisibilityMap(map=self)
 
     @property    
     def lock(self):  

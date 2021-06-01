@@ -168,7 +168,7 @@ class Tracking(object):
         self.reproj_err_frame_map_sigma = Parameters.kMaxReprojectionDistanceMap        
         
         self.max_frames_between_kfs = int(system.camera.fps)
-        self.min_frames_between_kfs = 2 #int(system.camera.fps / 3)
+        self.min_frames_between_kfs = 0 #int(system.camera.fps / 3)
 
         self.state = SlamState.NO_IMAGES_YET
         
@@ -297,12 +297,12 @@ class Tracking(object):
             self.num_matched_kps = len(idxs_cur)    
             print("# matched map points in prev frame: %d " % self.num_matched_kps)
 
-            if self.num_matched_kps > Parameters.kPointsForStricter and self.map.num_points() > 500 and Parameters.kBeliefThreshold < Parameters.kMaxThreshold:
+            if (self.num_matched_kps > Parameters.kPointsForStricter) and (self.map.num_points() > 500) and (Parameters.kBeliefThreshold < Parameters.kMaxThreshold):
                 Parameters.kBeliefThreshold *= 1.5
                 Printer.green(f"Increasing reliability parameter 'a' to: {Parameters.kBeliefThreshold}")
             if self.num_matched_kps < Parameters.kPointsForLooser:
                 Parameters.kBeliefThreshold = 0.8
-                Printer.green(f"Increasing reliability parameter 'a' to: {Parameters.kBeliefThreshold}")
+                Printer.green(f"Setting reliability parameter 'a' to: {Parameters.kBeliefThreshold}")
                                     
             # if not enough map point matches consider a larger search radius
             wide = False

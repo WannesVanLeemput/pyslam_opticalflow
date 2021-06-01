@@ -40,7 +40,7 @@ kVerbose=True
 kRansacThresholdNormalized = 0.0003#0.0003  # metric threshold used for normalized image coordinates
 kRansacProb = 0.6
 
-kMaxIdDistBetweenIntializingFrames = 20   # N.B.: worse performances with values smaller than 5!
+kMaxIdDistBetweenIntializingFrames = 5   # N.B.: worse performances with values smaller than 5!
 
 kFeatureMatchRatioTestInitializer = Parameters.kFeatureMatchRatioTestInitializer
 

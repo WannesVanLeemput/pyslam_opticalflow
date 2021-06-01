@@ -136,14 +136,14 @@ class Parameters(object):
     kHeight = 480
 
     # optical flow stride
-    kStrideHorizontal = 2
-    kStrideVertical = 2
+    kStrideHorizontal = 3
+    kStrideVertical = 3
 
     # belief threshold
-    kBeliefThreshold = 1
+    kBeliefThreshold = 0.6
     kBeliefThreshold_triangulation = 1
     kMaxThreshold = 20
     kCutoff = 0.9
-    kInitializerCutoff = 0.9
+    kInitializerCutoff = 0.85
     kPointsForStricter = 1000
     kPointsForLooser = 150
